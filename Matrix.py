@@ -1,5 +1,5 @@
 """
-This module contains main matrix classes and operations with them. Addition, subscraction, multiplication,
+This module contains main matrix classes and operations with them. Addition, subtraction, multiplication,
 exponentiation and equality operators are defined for appropriate matices.
 
 A mathematical matrix in this module is a list [row_1, row_2, ...], where row_i = [element_in_column_1_of_row_i, ...]
@@ -97,7 +97,7 @@ class Matrix:
 
     def __pow__(self, power):
         if power == 0:
-            new_matr = E(self.rows)
+            new_matr = matr_E(self.rows)
             return new_matr
         new_matr = self
         for i in range(power-1):
@@ -117,11 +117,6 @@ def matr_E(n):
     for i in range(n):
         new_matr[i][i] = 1
     return new_matr
-
-
-def to_matrix(rows, cols, **kwargs):
-    for i in kwargs:
-        i = Matrix
 
 
 if __name__ == '__main__':
