@@ -26,9 +26,48 @@ def crds_to_row(crds):
     return row
 
 
-class Basis:
-    def __init__(self):
-        pass
+class Basis2D:
+    def __init__(self, x=400, y=300):
+        self.center = Matrix(2, 1, [[x], [y]])
+        self.crds_x = [None]*2
+        for i in range(2):
+            self.crds_x[i] = Matrix(2, 1)
+        self.crds_x[0].set_col(0, [0, 0])
+        self.crds_x[1].set_col(0, [20, 0])
+        
+        self.crds_y = [None]*2
+        for i in range(2):
+            self.crds_y[i] = Matrix(2, 1)
+        self.crds_y[0].set_col(0, [0, 0])
+        self.crds_y[1].set_col(0, [0, 20])
+
+        self.abscrds_x = [None]*2
+        for i in range(2):
+            self.abscrds_x[i] = self.crds_x[i] + self.center
+
+        self.abscrds_y = [None]*2
+        for i in range(2):
+            self.abscrds_y[i] = self.crds_y[i] + self.center
+
+        self.id_x = canv.create_line(*crds_to_row(self.abscrds_x), fill='red')
+        self.id_y = canv.create_line(*crds_to_row(self.abscrds_y), fill='green')
+        self.center.print()
+
+    def set_coords(self):
+        for i in range(2):
+            self.abscrds_x[i] = self.crds_x[i]+self.center
+        for i in range(2):
+            self.abscrds_y[i] = self.crds_y[i]+self.center
+        canv.coords(self.id_x, *crds_to_row(self.abscrds_x), *crds_to_row(self.abscrds_x))
+        canv.coords(self.id_y, *crds_to_row(self.abscrds_y), *crds_to_row(self.abscrds_y))
+
+    def transform(self, func, *args, **kwargs):
+        for i in range(2):
+            self.crds_x[i] = func(*args, **kwargs)*self.crds_x[i]
+            self.crds_y[i] = func(*args, **kwargs)*self.crds_y[i]
+
+    def rotate(self, angle):
+        self.transform(M_rot, angle)
 
 
 class Rectangle:
@@ -49,8 +88,7 @@ class Rectangle:
 
         self.abscrds = [None]*4
         for i in range(4):
-            self.abscrds[i] = self.crds[i]
-            self.abscrds[i] += self.center
+            self.abscrds[i] = self.crds[i] + self.center
 
         self.id = canv.create_polygon(*crds_to_row(self.abscrds),  fill='black')
 
@@ -118,7 +156,7 @@ def transform_2():
 # new_coords.print()
 
 
-stopped = rt = lt = None
+stopped, rt, lt = None, None, None
 
 
 def loop():
@@ -142,27 +180,40 @@ def loop():
 
     canv.update()
     time.sleep(1)
+
     rect.transform(transform_1)
     rect.set_coords()
+    basis.transform(transform_1)
+    basis.set_coords()
+
     canv.update()
     time.sleep(1)
+
     rect.transform(transform_2)
     rect.set_coords()
+    basis.transform(transform_2)
+    basis.set_coords()
+
     canv.update()
     time.sleep(1)
 
     while stopped is not True:
         rect.set_coords()
+        basis.set_coords()
 
         if rt is True:
             rect.rotate(-math.pi/180)
+            basis.rotate(-math.pi/180)
         if lt is True:
             rect.rotate(math.pi/180)
+            basis.rotate(math.pi/180)
+
         canv.update()
         time.sleep(0.02)
 
 
-rect = Rectangle(angle=math.pi/2)
+rect = Rectangle()
+basis = Basis2D()
 loop()
 
 mainloop()
