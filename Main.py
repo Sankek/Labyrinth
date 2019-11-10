@@ -1,5 +1,5 @@
 """
-It's a base for a future 3D game.
+It's an example of using transformation matrices in the 2D space, which in future may be expanded to the 3D space.
 
 Press 'd' to rotate clockwise
 Press 'a' to rotate counterclockwise
@@ -19,64 +19,72 @@ canv = Canvas(root, bg='white')
 canv.pack(fill=BOTH, expand=1)
 
 
-def crds_to_row(crds):
-    row = []
-    for matr in crds:
-        row += matr.transpose()[0]
-    return row
-
-
-class Basis2D:
-    def __init__(self, x=400, y=300):
+class Object:
+    """
+    This class describes 2D-objects methods to transform
+    """
+    def __init__(self, crds, x=400, y=300):
         self.center = Matrix(2, 1, [[x], [y]])
-        self.basis_crds = [Matrix(2, 1, [[20], [0]]), Matrix(2, 1, [[0], [20]])]
-
-        self.basis_x_id = canv.create_line(*self.center.col(0), *(self.basis_crds[0]+self.center).col(0), fill='red')
-        self.basis_y_id = canv.create_line(*self.center.col(0), *(self.basis_crds[1]+self.center).col(0), fill='green')
+        self.crds = [Matrix(2, 1, [[x], [y]]) for x, y in crds]
+        self.abscrds = [matr+self.center for matr in self.crds]
 
     def set_coords(self):
-        canv.coords(self.basis_x_id, *self.center.col(0), *(self.basis_crds[0]+self.center).col(0))
-        canv.coords(self.basis_y_id, *self.center.col(0), *(self.basis_crds[1]+self.center).col(0))
-
-    def transform(self, func, *args, **kwargs):
-        self.basis_crds = [func(*args, **kwargs)*b for b in self.basis_crds]
-
-    def rotate(self, angle):
-        self.transform(M_rot, angle)
-
-
-class Rectangle:
-    def __init__(self, x=400, y=300, a=200, b=100, angle=0.0):
-        self.center = Matrix(2, 1, [[x], [y]])
-        self.side_a = a
-        self.side_b = b
-
-        self.crds = [None]*4
-        for i in range(4):
-            self.crds[i] = Matrix(2, 1)
-        self.crds[0].set_col(0, [-a/2, -b/2])
-        self.crds[1].set_col(0, [a/2, -b/2])
-        self.crds[2].set_col(0, [a/2, b/2])
-        self.crds[3].set_col(0, [-a/2, b/2])
-
-        self.rotate(angle)
-
-        self.abscrds = [None]*4
-        for i in range(4):
-            self.abscrds[i] = self.crds[i] + self.center
-
-        self.id = canv.create_polygon(*crds_to_row(self.abscrds),  fill='black')
-
-    def set_coords(self):
-        for i in range(4):
-            self.abscrds[i] = self.crds[i] + self.center
+        self.abscrds = [matr+self.center for matr in self.crds]
         canv.coords(self.id, *crds_to_row(self.abscrds))
 
     def transform(self, func, *args, **kwargs):
-        self.crds = [func(*args, **kwargs)*self.crds[i] for i in range(4)]
+        self.crds = [func(*args, **kwargs)*matr for matr in self.crds]
 
     def rotate(self, angle):
         self.transform(M_rot, angle)
+
+
+class Line(Object):
+    def __init__(self, crds, x=400, y=300, color='black'):
+        super().__init__(crds, x, y)
+        self.id = canv.create_line(*crds_to_row(self.abscrds), fill=color)
+
+
+class Basis2D:
+    def __init__(self, x=400, y=300, length=40):
+        self.x = Line([(0, 0), (length, 0)], x, y, color='red')
+        self.y = Line([(0, 0), (0, length)], x, y, color='green')
+
+    def set_coords(self):
+        self.x.set_coords()
+        self.y.set_coords()
+
+    def transform(self, func, *args, **kwargs):
+        self.x.transform(func, *args, **kwargs)
+        self.y.transform(func, *args, **kwargs)
+
+    def rotate(self, angle):
+        self.x.rotate(angle)
+        self.y.rotate(angle)
+
+
+class Polygon(Object):
+    def __init__(self, crds, x=400, y=300):
+        super().__init__(crds, x, y)
+        self.id = canv.create_polygon(*crds_to_row(self.abscrds), fill='black')
+
+
+class Rectangle(Polygon):
+    def __init__(self, x=400, y=300, a=200, b=100, angle=0.0):
+        crds = [(-a/2, -b/2), (a/2, -b/2), (a/2, b/2), (-a/2, b/2)]
+        super().__init__(crds, x, y)
+
+
+def crds_to_row(crds):
+    """this function converts a list of matrices with coordinates to a row which can be used for tkinter methods."""
+    row = []
+    for matr in crds:
+        row += matr.col(0)
+    return row
+
+
+'''These are transformation matrices. 
+The columns of each matrix are coordinates of basis vectors after the transformation in the old system'''
 
 
 def M_rot(a):
@@ -84,16 +92,22 @@ def M_rot(a):
     return new_matr
 
 
-def transform_1():
+def transform_1():  # increase x-size by two
     new_matr = Matrix(2, 2, [[2, 0], [0, 1]])
     return new_matr
 
 
-def transform_2():
+def transform_2():  # shift y-coordinates to the x-axis direction
     new_matr = Matrix(2, 2, [[1, 1], [0, 1]])
     return new_matr
 
 
+def transform_3(k):  # increase in size by k
+    new_matr = Matrix(2, 2, [[k, 1], [0, k]])
+    return new_matr
+
+
+#  Rotation matrices for the 3D case.
 # def rot_Mx(a):
 #     m = Matrix(3, 3)
 #     m.set([[1, 0, 0],
@@ -116,20 +130,9 @@ def transform_2():
 #            [math.sin(a), math.cos(a), 0],
 #            [0, 0, 1]])
 #     return m
-#
-#
-# C = rot_Mx(math.pi / 2) * rot_My(math.pi / 2) * rot_Mz(math.pi / 2)
-# C.print()
-# print('-----')
-# coords = Matrix(3, 1)
-# coords.set_col(0, [1, 0, 0])
-# coords.print()
-# print('---')
-# new_coords = C * coords
-# new_coords.print()
 
 
-stopped, rt, lt = None, None, None
+stopped, rt, lt = None, True, None
 
 
 def loop():
@@ -138,14 +141,12 @@ def loop():
         stopped = True
 
     def left(event):
-        global lt, rt
-        lt = True
-        rt = False
+        global lt, rt, stopped
+        lt, rt, stopped = True, False, False
 
     def right(event):
-        global rt, lt
-        rt = True
-        lt = False
+        global rt, lt, stopped
+        rt, lt, stopped = True, False, False
 
     canv.bind_all('s', stop)
     canv.bind_all('a', left)
@@ -154,39 +155,61 @@ def loop():
     canv.update()
     time.sleep(1)
 
-    rect.transform(transform_1)
-    rect.set_coords()
-    basis.transform(transform_1)
-    basis.set_coords()
+    def main_transforms():
+        polygon.transform(transform_3, 10)
+        polygon.set_coords()
+        polygon_basis.transform(transform_3, 10)
+        polygon_basis.set_coords()
 
-    canv.update()
-    time.sleep(1)
-
-    rect.transform(transform_2)
-    rect.set_coords()
-    basis.transform(transform_2)
-    basis.set_coords()
-
-    canv.update()
-    time.sleep(1)
-
-    while stopped is not True:
+        rect.transform(transform_1)
         rect.set_coords()
+        basis.transform(transform_1)
         basis.set_coords()
 
-        if rt is True:
-            rect.rotate(-math.pi/180)
-            basis.rotate(-math.pi/180)
-        if lt is True:
-            rect.rotate(math.pi/180)
-            basis.rotate(math.pi/180)
+        canv.update()
+        time.sleep(1)
+
+        polygon.rotate(math.pi/2)
+        polygon.set_coords()
+        polygon_basis.rotate(math.pi/2)
+        polygon_basis.set_coords()
+
+        rect.transform(transform_2)
+        rect.set_coords()
+        basis.transform(transform_2)
+        basis.set_coords()
 
         canv.update()
-        time.sleep(0.02)
+        time.sleep(1)
+
+    def loop_rotation():
+        if stopped is not True:
+            rect.set_coords()
+            basis.set_coords()
+
+            if rt is True:
+                rect.rotate(-math.pi/180)
+                basis.rotate(-math.pi/180)
+            if lt is True:
+                rect.rotate(math.pi/180)
+                basis.rotate(math.pi/180)
+
+            canv.update()
+        root.after(5, loop_rotation)
+
+    main_transforms()
+    loop_rotation()
 
 
+window_basis = Basis2D(5, 5)
 rect = Rectangle()
+
+polygon_crds = [(0, 20), (3, 17), (5, 5), (10, 0), (17, -5), (15, -6), (5, -5), (3, -2), (0, 0), (-4, 1), (-2, 10)]
+polygon = Polygon(polygon_crds, 100, 200)
+polygon_basis = Basis2D(100, 200)
+
 basis = Basis2D()
+
 loop()
 
 mainloop()
