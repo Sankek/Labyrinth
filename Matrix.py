@@ -91,8 +91,7 @@ class Matrix:
             return new_matr
 
     def __sub__(self, other):
-        new_matr = self
-        new_matr += other*-1
+        new_matr = self+other*-1
         return new_matr
 
     def __pow__(self, power):
@@ -110,6 +109,12 @@ class Matrix:
             for r in range(self.rows):
                 new_matr[c][r] = self[r][c]
         return new_matr
+
+    def row(self, row):
+        return self[row]
+
+    def col(self, col):
+        return self.transpose()[col]
 
 
 def matr_E(n):
