@@ -75,6 +75,23 @@ class Rectangle(Polygon):
         super().__init__(crds, x, y)
 
 
+class Link:
+    """ This class allows you to 'link' objects, so you haven't to write the same methods for every object"""
+    def __init__(self, *args):
+        self.objects = args
+
+    def set_coords(self):
+        for obj in self.objects:
+            obj.set_coords()
+
+    def transform(self, func, *args, **kwargs):
+        for obj in self.objects:
+            obj.transform(func, *args, **kwargs)
+
+    def rotate(self, angle):
+        self.transform(M_rot, angle)
+
+
 def crds_to_row(crds):
     """this function converts a list of matrices with coordinates to a row which can be used for tkinter methods."""
     row = []
@@ -103,7 +120,7 @@ def transform_2():  # shift y-coordinates to the x-axis direction
 
 
 def transform_3(k):  # increase in size by k
-    new_matr = Matrix(2, 2, [[k, 1], [0, k]])
+    new_matr = Matrix(2, 2, [[k, 0], [0, k]])
     return new_matr
 
 
@@ -156,10 +173,8 @@ def loop():
     time.sleep(1)
 
     def main_transforms():
-        polygon.transform(transform_3, 10)
+        polygon.transform(transform_3, 2)
         polygon.set_coords()
-        polygon_basis.transform(transform_3, 10)
-        polygon_basis.set_coords()
 
         rect.transform(transform_1)
         rect.set_coords()
@@ -171,8 +186,6 @@ def loop():
 
         polygon.rotate(math.pi/2)
         polygon.set_coords()
-        polygon_basis.rotate(math.pi/2)
-        polygon_basis.set_coords()
 
         rect.transform(transform_2)
         rect.set_coords()
@@ -205,8 +218,9 @@ window_basis = Basis2D(5, 5)
 rect = Rectangle()
 
 polygon_crds = [(0, 20), (3, 17), (5, 5), (10, 0), (17, -5), (15, -6), (5, -5), (3, -2), (0, 0), (-4, 1), (-2, 10)]
-polygon = Polygon(polygon_crds, 100, 200)
-polygon_basis = Basis2D(100, 200)
+polygon_obj = Polygon(polygon_crds, 100, 200)
+polygon_basis = Basis2D(100, 200, length=10)
+polygon = Link(polygon_basis, polygon_obj)
 
 basis = Basis2D()
 
