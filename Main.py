@@ -29,42 +29,17 @@ def crds_to_row(crds):
 class Basis2D:
     def __init__(self, x=400, y=300):
         self.center = Matrix(2, 1, [[x], [y]])
-        self.crds_x = [None]*2
-        for i in range(2):
-            self.crds_x[i] = Matrix(2, 1)
-        self.crds_x[0].set_col(0, [0, 0])
-        self.crds_x[1].set_col(0, [20, 0])
-        
-        self.crds_y = [None]*2
-        for i in range(2):
-            self.crds_y[i] = Matrix(2, 1)
-        self.crds_y[0].set_col(0, [0, 0])
-        self.crds_y[1].set_col(0, [0, 20])
+        self.basis_crds = [Matrix(2, 1, [[20], [0]]), Matrix(2, 1, [[0], [20]])]
 
-        self.abscrds_x = [None]*2
-        for i in range(2):
-            self.abscrds_x[i] = self.crds_x[i] + self.center
-
-        self.abscrds_y = [None]*2
-        for i in range(2):
-            self.abscrds_y[i] = self.crds_y[i] + self.center
-
-        self.id_x = canv.create_line(*crds_to_row(self.abscrds_x), fill='red')
-        self.id_y = canv.create_line(*crds_to_row(self.abscrds_y), fill='green')
-        self.center.print()
+        self.basis_x_id = canv.create_line(*self.center.col(0), *(self.basis_crds[0]+self.center).col(0), fill='red')
+        self.basis_y_id = canv.create_line(*self.center.col(0), *(self.basis_crds[1]+self.center).col(0), fill='green')
 
     def set_coords(self):
-        for i in range(2):
-            self.abscrds_x[i] = self.crds_x[i]+self.center
-        for i in range(2):
-            self.abscrds_y[i] = self.crds_y[i]+self.center
-        canv.coords(self.id_x, *crds_to_row(self.abscrds_x), *crds_to_row(self.abscrds_x))
-        canv.coords(self.id_y, *crds_to_row(self.abscrds_y), *crds_to_row(self.abscrds_y))
+        canv.coords(self.basis_x_id, *self.center.col(0), *(self.basis_crds[0]+self.center).col(0))
+        canv.coords(self.basis_y_id, *self.center.col(0), *(self.basis_crds[1]+self.center).col(0))
 
     def transform(self, func, *args, **kwargs):
-        for i in range(2):
-            self.crds_x[i] = func(*args, **kwargs)*self.crds_x[i]
-            self.crds_y[i] = func(*args, **kwargs)*self.crds_y[i]
+        self.basis_crds = [func(*args, **kwargs)*b for b in self.basis_crds]
 
     def rotate(self, angle):
         self.transform(M_rot, angle)
@@ -94,13 +69,11 @@ class Rectangle:
 
     def set_coords(self):
         for i in range(4):
-            self.abscrds[i] = self.crds[i]
-            self.abscrds[i] += self.center
+            self.abscrds[i] = self.crds[i] + self.center
         canv.coords(self.id, *crds_to_row(self.abscrds))
 
     def transform(self, func, *args, **kwargs):
-        for i in range(4):
-            self.crds[i] = func(*args, **kwargs)*self.crds[i]
+        self.crds = [func(*args, **kwargs)*self.crds[i] for i in range(4)]
 
     def rotate(self, angle):
         self.transform(M_rot, angle)
