@@ -29,11 +29,11 @@ class Object:
         self.abscrds = [matr+self.center for matr in self.crds]
 
     def set_coords(self):
-        self.abscrds = [matr+self.center for matr in self.crds]
         canv.coords(self.id, *crds_to_row(self.abscrds))
 
     def transform(self, func, *args, **kwargs):
         self.crds = [func(*args, **kwargs)*matr for matr in self.crds]
+        self.abscrds = [matr+self.center for matr in self.crds]
 
     def rotate(self, angle):
         self.transform(M_rot, angle)
@@ -43,6 +43,20 @@ class Line(Object):
     def __init__(self, crds, x=400, y=300, color='black'):
         super().__init__(crds, x, y)
         self.id = canv.create_line(*crds_to_row(self.abscrds), fill=color)
+
+
+class Point(Object):
+    def __init__(self, crd, x=400, y=300, color='red', size=2):
+        super().__init__(crd, x, y)
+        self.sizeMatr = Matrix(2, 1, [[size], [size]])
+        self.id = canv.create_oval(*(self.abscrds[0]-self.sizeMatr).col(0),
+                                   *(self.abscrds[0]+self.sizeMatr).col(0), fill=color, width=0)
+        print(self.abscrds[0].col(0), (self.abscrds[0]-self.sizeMatr).col(0), (self.abscrds[0]+self.sizeMatr).col(0))
+        print((self.abscrds[0]-self.sizeMatr).col(0))
+
+    def set_coords(self):
+        canv.coords(self.id, *(self.abscrds[0]-self.sizeMatr).col(0),
+                             *(self.abscrds[0]+self.sizeMatr).col(0))
 
 
 class Basis2D:
@@ -70,7 +84,7 @@ class Polygon(Object):
 
 
 class Rectangle(Polygon):
-    def __init__(self, x=400, y=300, a=200, b=100, angle=0.0):
+    def __init__(self, x=400, y=300, a=200, b=100):
         crds = [(-a/2, -b/2), (a/2, -b/2), (a/2, b/2), (-a/2, b/2)]
         super().__init__(crds, x, y)
 
@@ -173,13 +187,11 @@ def loop():
     time.sleep(1)
 
     def main_transforms():
-        polygon.transform(transform_3, 2)
+        polygon.transform(transform_3, 10)
         polygon.set_coords()
 
         rect.transform(transform_1)
         rect.set_coords()
-        basis.transform(transform_1)
-        basis.set_coords()
 
         canv.update()
         time.sleep(1)
@@ -189,8 +201,6 @@ def loop():
 
         rect.transform(transform_2)
         rect.set_coords()
-        basis.transform(transform_2)
-        basis.set_coords()
 
         canv.update()
         time.sleep(1)
@@ -198,14 +208,11 @@ def loop():
     def loop_rotation():
         if stopped is not True:
             rect.set_coords()
-            basis.set_coords()
 
             if rt is True:
                 rect.rotate(-math.pi/180)
-                basis.rotate(-math.pi/180)
             if lt is True:
                 rect.rotate(math.pi/180)
-                basis.rotate(math.pi/180)
 
             canv.update()
         root.after(5, loop_rotation)
@@ -215,14 +222,16 @@ def loop():
 
 
 window_basis = Basis2D(5, 5)
-rect = Rectangle()
 
 polygon_crds = [(0, 20), (3, 17), (5, 5), (10, 0), (17, -5), (15, -6), (5, -5), (3, -2), (0, 0), (-4, 1), (-2, 10)]
 polygon_obj = Polygon(polygon_crds, 100, 200)
-polygon_basis = Basis2D(100, 200, length=10)
-polygon = Link(polygon_basis, polygon_obj)
+polygon_basis = Basis2D(100, 200, length=2)
+points_list = [Point([crd], 100, 200) for crd in polygon_crds]
+polygon = Link(polygon_basis, polygon_obj, *points_list)
 
+rect_obj = Rectangle()
 basis = Basis2D()
+rect = Link(rect_obj, basis)
 
 loop()
 
