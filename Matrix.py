@@ -85,7 +85,7 @@ class Matrix:
                         new_matr[r][c] += self[r][n]*other_or_const[n][c]
             return new_matr
         except AttributeError:
-            new_matr = self
+            new_matr = Matrix(self.rows, self.cols)
             for r in range(self.rows):
                 new_matr[r] = [i*other_or_const for i in self[r]]
             return new_matr
