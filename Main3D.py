@@ -39,9 +39,9 @@ class Object:
 
 
 class Line(Object):
-    def __init__(self, crds, x=400, y=300, z=0, color='black'):
+    def __init__(self, crds, x=400, y=300, z=0, color='black', width=0):
         super().__init__(crds, x, y, z)
-        self.id = canv.create_line(*crds_to_row(self.abscrds), fill=color)
+        self.id = canv.create_line(*crds_to_row(self.abscrds), fill=color, width=width)
 
 
 class Point(Object):
@@ -83,9 +83,9 @@ class Basis3D:
 
 
 class Polygon(Object):
-    def __init__(self, crds, x=400, y=300, z=0):
+    def __init__(self, crds, x=400, y=300, z=0, color='black'):
         super().__init__(crds, x, y, z)
-        self.id = canv.create_polygon(*crds_to_row(self.abscrds), fill='black')
+        self.id = canv.create_polygon(*crds_to_row(self.abscrds), fill=color)
 
 
 class Rectangle(Polygon):
@@ -196,6 +196,14 @@ def bindings():
         global trans2
         trans2 = False
 
+    def b_trans3(event):
+        global trans3
+        trans3 = True
+
+    def bs_trans3(event):
+        global trans3
+        trans3 = False
+
     def b_left(event):
         global lt
         lt = True
@@ -236,13 +244,15 @@ def bindings():
     canv.bind_all('<KeyRelease-w>', bs_up)
     canv.bind_all('s', b_down)
     canv.bind_all('<KeyRelease-s>', bs_down)
-    canv.bind_all('q', b_trans1)
-    canv.bind_all('<KeyRelease-q>', bs_trans1)
-    canv.bind_all('e', b_trans2)
-    canv.bind_all('<KeyRelease-e>', bs_trans2)
+    canv.bind_all('z', b_trans1)
+    canv.bind_all('<KeyRelease-z>', bs_trans1)
+    canv.bind_all('x', b_trans2)
+    canv.bind_all('<KeyRelease-x>', bs_trans2)
+    canv.bind_all('c', b_trans3)
+    canv.bind_all('<KeyRelease-c>', bs_trans3)
 
 
-rt, lt, up, dn, trans1, trans2 = False, False, False, False, False, False
+rt, lt, up, dn, trans1, trans2, trans3 = False, False, False, False, False, False, False
 bindings()
 
 
@@ -255,13 +265,16 @@ def loop():
         pass
 
     def loop_rotation():
-        if rt or lt or up or dn or trans1 or trans2 is True:
+        if rt or lt or up or dn or trans1 or trans2 or trans3 is True:
             new_poly.set_coords()
 
             if trans1 is True:
                 new_poly.transform(rot_Mx, math.pi/180)
             if trans2 is True:
+                new_poly.transform(rot_My, math.pi/180)
+            if trans3 is True:
                 new_poly.transform(rot_Mz, math.pi/180)
+
             if up is True:
                 new_poly.add_to_center(Matrix(3, 1, [[0], [-1], [0]]))
             if dn is True:
@@ -291,12 +304,21 @@ window_basis = Basis3D(5, 5)
 # rect = Link(rect_obj, basis)
 
 new_crds = [(40, 40, 0), (-40, 40, 0), (-40, -40, 0), (40, -40, 0)]
+new_new_crds = [(40, 40, 80), (-40, 40, 80), (-40, -40, 80), (40, -40, 80)]
+line_crds = [(40, 40, 0), (40, 40, 80), (-40, 40, 0), (-40, 40, 80),
+             (-40, -40, 0), (-40, -40, 80), (40, -40, 0), (40, -40, 80)]
 
 points_list = [Point([crd]) for crd in new_crds]
-new_poly_obj = Polygon(new_crds)
+points_new_plane_list = [Point([crd]) for crd in new_new_crds]
+
+new_poly_obj = Polygon(new_crds, color='grey')
+new_poly_new_plane_obj = Polygon(new_new_crds)
+
+lines = [Line([x, y], width=3) for x, y in zip(line_crds[::2], line_crds[1::2])]
+
 new_basis = Basis3D()
 
-new_poly = Link(new_basis, new_poly_obj, *points_list)
+new_poly = Link(new_basis, new_poly_obj, *points_list, new_poly_new_plane_obj, *points_new_plane_list, *lines)
 
 loop()
 
