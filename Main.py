@@ -40,9 +40,9 @@ class Object:
 
 
 class Line(Object):
-    def __init__(self, crds, x=400, y=300, color='black'):
+    def __init__(self, crds, x=400, y=300, color='black', width=0):
         super().__init__(crds, x, y)
-        self.id = canv.create_line(*crds_to_row(self.abscrds), fill=color)
+        self.id = canv.create_line(*crds_to_row(self.abscrds), fill=color, width=width)
 
 
 class Point(Object):
@@ -60,9 +60,9 @@ class Point(Object):
 
 
 class Basis2D:
-    def __init__(self, x=400, y=300, length=40):
-        self.x = Line([(0, 0), (length, 0)], x, y, color='red')
-        self.y = Line([(0, 0), (0, length)], x, y, color='green')
+    def __init__(self, x=400, y=300, length=40, width=0):
+        self.x = Line([(0, 0), (length, 0)], x, y, color='red', width=width)
+        self.y = Line([(0, 0), (0, length)], x, y, color='green', width=width)
 
     def set_coords(self):
         self.x.set_coords()
@@ -138,6 +138,16 @@ def transform_3(k):  # increase in size by k
     return new_matr
 
 
+def transform_4():
+    new_matr = Matrix(2, 2, [[-1, 0], [0, 1]])
+    return new_matr
+
+
+def transform_5(k):
+    new_matr = Matrix(2, 2, [[-0.5, 0], [0, 0.5]])
+    return new_matr
+
+
 #  Rotation matrices for the 3D case.
 # def rot_Mx(a):
 #     m = Matrix(3, 3)
@@ -162,59 +172,132 @@ def transform_3(k):  # increase in size by k
 #            [0, 0, 1]])
 #     return m
 
+def bindings():
+    def b_trans1(event):
+        global trans1
+        trans1 = True
 
-stopped, rt, lt = None, True, None
+        def smooth(k):
+            for i in range(50):
+                grid.transform(transform_3, k/100)
+                grid.set_coords()
+                canv.update()
+                time.sleep(0.02)
+
+            grid.transform(transform_4)
+            grid.set_coords()
+            canv.update()
+            time.sleep(0.02)
+
+            for i in range(50):
+                grid.transform(transform_3, 100/k)
+                grid.set_coords()
+                canv.update()
+                time.sleep(0.02)
+
+        smooth(90)
+
+    def bs_trans1(event):
+        global trans1
+        trans1 = False
+
+    def b_trans2(event):
+        global trans2
+        trans2 = True
+
+        def smooth(k):
+            for i in range(50):
+                new_basis.transform(transform_3, k/100)
+                new_basis.set_coords()
+                canv.update()
+                time.sleep(0.02)
+
+            new_basis.transform(transform_4)
+            new_basis.set_coords()
+            canv.update()
+            time.sleep(0.02)
+
+            for i in range(50):
+                new_basis.transform(transform_3, 100/k)
+                new_basis.set_coords()
+                canv.update()
+                time.sleep(0.02)
+
+        smooth(95)
+
+    def bs_trans2(event):
+        global trans2
+        trans2 = False
+
+    def b_trans3(event):
+        global trans3
+        trans3 = True
+
+    def bs_trans3(event):
+        global trans3
+        trans3 = False
+
+    def b_left(event):
+        global lt
+        lt = True
+
+    def bs_left(event):
+        global lt
+        lt = False
+
+    def b_right(event):
+        global rt
+        rt = True
+
+    def bs_right(event):
+        global rt
+        rt = False
+
+    def b_up(event):
+        global up
+        up = True
+
+    def bs_up(event):
+        global up
+        up = False
+
+    def b_down(event):
+        global dn
+        dn = True
+
+    def bs_down(event):
+        global dn
+        dn = False
+
+    canv.bind_all('a', b_left)
+    canv.bind_all('<KeyRelease-a>', bs_left)
+    canv.bind_all('d', b_right)
+    canv.bind_all('<KeyRelease-d>', bs_right)
+    canv.bind_all('w', b_up)
+    canv.bind_all('<KeyRelease-w>', bs_up)
+    canv.bind_all('s', b_down)
+    canv.bind_all('<KeyRelease-s>', bs_down)
+    canv.bind_all('z', b_trans1)
+    canv.bind_all('<KeyRelease-z>', bs_trans1)
+    canv.bind_all('x', b_trans2)
+    canv.bind_all('<KeyRelease-x>', bs_trans2)
+    canv.bind_all('c', b_trans3)
+    canv.bind_all('<KeyRelease-c>', bs_trans3)
+
+
+rt, lt, up, dn, trans1, trans2, trans3 = False, False, False, False, False, False, False
+bindings()
 
 
 def loop():
-    def stop(event):
-        global stopped
-        stopped = True
-
-    def left(event):
-        global lt, rt, stopped
-        lt, rt, stopped = True, False, False
-
-    def right(event):
-        global rt, lt, stopped
-        rt, lt, stopped = True, False, False
-
-    canv.bind_all('s', stop)
-    canv.bind_all('a', left)
-    canv.bind_all('d', right)
-
     canv.update()
     time.sleep(1)
 
     def main_transforms():
-        polygon.transform(transform_3, 10)
-        polygon.set_coords()
-
-        rect.transform(transform_1)
-        rect.set_coords()
-
-        canv.update()
-        time.sleep(1)
-
-        polygon.rotate(math.pi/2)
-        polygon.set_coords()
-
-        rect.transform(transform_2)
-        rect.set_coords()
-
-        canv.update()
-        time.sleep(1)
+        pass
 
     def loop_rotation():
-        if stopped is not True:
-            rect.set_coords()
-
-            if rt is True:
-                rect.rotate(-math.pi/180)
-            if lt is True:
-                rect.rotate(math.pi/180)
-
-            canv.update()
+        canv.update()
         root.after(5, loop_rotation)
 
     main_transforms()
@@ -223,15 +306,20 @@ def loop():
 
 window_basis = Basis2D(5, 5)
 
-polygon_crds = [(0, 20), (3, 17), (5, 5), (10, 0), (17, -5), (15, -6), (5, -5), (3, -2), (0, 0), (-4, 1), (-2, 10)]
-polygon_obj = Polygon(polygon_crds, 100, 200)
-polygon_basis = Basis2D(100, 200, length=2)
-points_list = [Point([crd], 100, 200) for crd in polygon_crds]
-polygon = Link(polygon_basis, polygon_obj, *points_list)
 
-rect_obj = Rectangle()
-basis = Basis2D()
-rect = Link(rect_obj, basis)
+vert_list = [(-400, -280), (400, -280), (-400, -240), (400, -240), (-400, -200), (400, -200), (-400, -160), (400, -160), (-400, -120), (400, -120), (-400, -80), (400, -80), (-400, -40), (400, -40), (-400, 0), (400, 0), (-400, 40), (400, 40), (-400, 80), (400, 80), (-400, 120), (400, 120), (-400, 160), (400, 160), (-400, 200), (400, 200), (-400, 240), (400, 240), (-400, 280), (400, 280)]
+hor_list = [(-360, -300), (-360, 300), (-320, -300), (-320, 300), (-280, -300), (-280, 300), (-240, -300), (-240, 300), (-200, -300), (-200, 300), (-160, -300), (-160, 300), (-120, -300), (-120, 300), (-80, -300), (-80, 300), (-40, -300), (-40, 300), (0, -300), (0, 300), (40, -300), (40, 300), (80, -300), (80, 300), (120, -300), (120, 300), (160, -300), (160, 300), (200, -300), (200, 300), (240, -300), (240, 300), (280, -300), (280, 300), (320, -300), (320, 300), (360, -300), (360, 300)]
+
+
+hor_lines = [Line([x, y]) for x, y in zip(hor_list[::2], hor_list[1::2])]
+vert_lines = [Line([x, y]) for x, y in zip(vert_list[::2], vert_list[1::2])]
+basis = Basis2D(width=2)
+
+point = Point([(40, 80)])
+grid = Link(basis, *hor_lines, *vert_lines, point)
+
+new_basis = Basis2D(width=4, length=20)
+
 
 loop()
 

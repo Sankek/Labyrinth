@@ -2,13 +2,13 @@
 It's like the pseudo 3D.
 
 Press 'a', 'w', 's', 'd' to move in 4-directions
-Press 'q', 'e' to start rotating like in 3D
+Press 'z', 'x', 'c', 'v' to start rotating like in 3D
 """
 
 from tkinter import *
 from Matrix import *
+from time import time, sleep
 import math
-import time
 
 root = Tk()
 fr = Frame(root)
@@ -20,7 +20,7 @@ canv.pack(fill=BOTH, expand=1)
 
 class Object:
     """
-    This class describes 2D-objects methods to transform
+    This class describes 3D-objects methods to transform
     """
     def __init__(self, crds, x=400, y=300, z=0):
         self.center = Matrix(3, 1, [[x], [y], [z]])
@@ -179,6 +179,18 @@ def rot_Mz(a):
     return m
 
 
+def rot_M_general(a, x, y, z):  # Rotation matrix relative to the axis with vector (x, y, z)
+    m = Matrix(3, 3)
+    m.set([[math.cos(a)+(1-math.cos(a))*x**2, (1-math.cos(a))*x*y-math.sin(a)*z, (1-math.cos(a))*x*z+math.sin(a)*y],
+           [(1-math.cos(a))*x*y+math.sin(a)*z, math.cos(a)+(1-math.cos(a))*y**2, (1-math.cos(a))*z*y-math.sin(a)*x],
+           [(1-math.cos(a))*x*z-math.sin(a)*y, (1-math.cos(a))*z*y+math.sin(a)*x, math.cos(a)+(1-math.cos(a))*z**2]])
+    # m[0] = [math.cos(a)+(1-math.cos(a))*x**2, (1-math.cos(a))*x*y-math.sin(a)*z, (1-math.cos(a))*x*z+math.sin(a)*y]
+    # m[1] = [(1-math.cos(a))*x*y+math.sin(a)*z, math.cos(a)+(1-math.cos(a))*y**2, (1-math.cos(a))*z*y-math.sin(a)*x]
+    # m[2] = [(1-math.cos(a))*x*z-math.sin(a)*y, (1-math.cos(a))*z*y+math.sin(a)*x, math.cos(a)+(1-math.cos(a))*z**2]
+
+    return m
+
+
 def bindings():
     def b_trans1(event):
         global trans1
@@ -203,6 +215,14 @@ def bindings():
     def bs_trans3(event):
         global trans3
         trans3 = False
+        
+    def b_trans4(event):
+        global trans4
+        trans4 = True
+
+    def bs_trans4(event):
+        global trans4
+        trans4 = False
 
     def b_left(event):
         global lt
@@ -250,31 +270,48 @@ def bindings():
     canv.bind_all('<KeyRelease-x>', bs_trans2)
     canv.bind_all('c', b_trans3)
     canv.bind_all('<KeyRelease-c>', bs_trans3)
+    canv.bind_all('v', b_trans4)
+    canv.bind_all('<KeyRelease-v>', bs_trans4)
 
 
-rt, lt, up, dn, trans1, trans2, trans3 = False, False, False, False, False, False, False
+rt, lt, up, dn, trans1, trans2, trans3, trans4 = False, False, False, False, False, False, False, False
 bindings()
 
 
 def loop():
-
+    global k
     canv.update()
-    time.sleep(1)
+    sleep(1)
 
     def main_transforms():
         pass
 
+    k=0
+
     def loop_rotation():
-        if rt or lt or up or dn or trans1 or trans2 or trans3 is True:
-            new_poly.set_coords()
+        global k
+        start_time = time()
+        if rt or lt or up or dn or trans1 or trans2 or trans3 or trans4 is True:
+
 
             if trans1 is True:
-                new_poly.transform(rot_Mx, math.pi/180)
+                new_poly.transform(rot_Mx, math.pi/180*5)
+                new_poly_1.transform(rot_Mx, math.pi/180*5)
+                new_poly_2.transform(rot_Mx, math.pi/180*5)
+                new_poly_3.transform(rot_Mx, math.pi/180*5)
             if trans2 is True:
-                new_poly.transform(rot_My, math.pi/180)
+                new_poly.transform(rot_My, math.pi/180*25)
+                new_poly_1.transform(rot_My, math.pi/180*5)
+                new_poly_2.transform(rot_My, math.pi/180*5)
+                new_poly_3.transform(rot_My, math.pi/180*5)
             if trans3 is True:
-                new_poly.transform(rot_Mz, math.pi/180)
-
+                new_poly.transform(rot_Mz, math.pi/180*5)
+                new_poly_1.transform(rot_Mz, math.pi/180*5)
+                new_poly_2.transform(rot_Mz, math.pi/180*5)
+                new_poly_3.transform(rot_Mz, math.pi/180*5)
+            if trans4 is True:
+                new_poly.transform(rot_M_general, math.pi/180, new_basis.y.crds[1][0][0], new_basis.y.crds[1][1][0], new_basis.y.crds[1][2][0])
+                # new_poly.transform(rot_M_general, 0.01, 2, 4, 3)
             if up is True:
                 new_poly.add_to_center(Matrix(3, 1, [[0], [-1], [0]]))
             if dn is True:
@@ -284,11 +321,19 @@ def loop():
             if rt is True:
                 new_poly.add_to_center(Matrix(3, 1, [[1], [0], [0]]))
 
-            canv.update()
-        root.after(5, loop_rotation)
+
+            new_poly.set_coords()
+            new_poly_1.set_coords()
+            new_poly_2.set_coords()
+            new_poly_3.set_coords()
+            # canv.update()  # without it animation also works but it's less laggy
+        print(round((time()-start_time)*1000, 1), 'ms')
+        root.after(20, loop_rotation)
 
     main_transforms()
+
     loop_rotation()
+
 
 
 window_basis = Basis3D(5, 5)
@@ -310,15 +355,35 @@ line_crds = [(40, 40, 0), (40, 40, 80), (-40, 40, 0), (-40, 40, 80),
 
 points_list = [Point([crd]) for crd in new_crds]
 points_new_plane_list = [Point([crd]) for crd in new_new_crds]
-
 new_poly_obj = Polygon(new_crds, color='grey')
 new_poly_new_plane_obj = Polygon(new_new_crds)
-
 lines = [Line([x, y], width=3) for x, y in zip(line_crds[::2], line_crds[1::2])]
-
 new_basis = Basis3D()
-
 new_poly = Link(new_basis, new_poly_obj, *points_list, new_poly_new_plane_obj, *points_new_plane_list, *lines)
+
+points_list_1 = [Point([crd], 100, 100) for crd in new_crds]
+points_new_plane_list_1 = [Point([crd], 100, 100) for crd in new_new_crds]
+new_poly_obj_1 = Polygon(new_crds, 100, 100, color='grey')
+new_poly_new_plane_obj_1 = Polygon(new_new_crds, 100, 100)
+lines_1 = [Line([x, y], 100, 100, width=3) for x, y in zip(line_crds[::2], line_crds[1::2])]
+new_basis_1 = Basis3D(100, 100)
+new_poly_1 = Link(new_basis_1, new_poly_obj_1, *points_list_1, new_poly_new_plane_obj_1, *points_new_plane_list_1, *lines_1)
+
+points_list_2 = [Point([crd], 100, 300) for crd in new_crds]
+points_new_plane_list_2 = [Point([crd], 100, 300) for crd in new_new_crds]
+new_poly_obj_2 = Polygon(new_crds, 100, 300, color='grey')
+new_poly_new_plane_obj_2 = Polygon(new_new_crds, 100, 300)
+lines_2 = [Line([x, y], 100, 300, width=3) for x, y in zip(line_crds[::2], line_crds[1::2])]
+new_basis_2 = Basis3D(100, 300)
+new_poly_2 = Link(new_basis_2, new_poly_obj_2, *points_list_2, new_poly_new_plane_obj_2, *points_new_plane_list_2, *lines_2)
+
+points_list_3 = [Point([crd], 300, 100) for crd in new_crds]
+points_new_plane_list_3 = [Point([crd], 300, 100) for crd in new_new_crds]
+new_poly_obj_3 = Polygon(new_crds, 300, 100, color='grey')
+new_poly_new_plane_obj_3 = Polygon(new_new_crds, 300, 100)
+lines_3 = [Line([x, y], 300, 100, width=3) for x, y in zip(line_crds[::2], line_crds[1::2])]
+new_basis_3 = Basis3D(300, 100)
+new_poly_3 = Link(new_basis_3, new_poly_obj_3, *points_list_3, new_poly_new_plane_obj_3, *points_new_plane_list_3, *lines_3)
 
 loop()
 
