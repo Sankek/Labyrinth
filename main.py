@@ -7,6 +7,7 @@ Use 'a', 'w', 's', 'd', 'q', 'e' to move
 from tkinter import *
 from KekGL import *
 from models import pyramid_model
+from math import cos, sin, pi
 
 root = Tk()
 fr = Frame(root)
@@ -26,42 +27,57 @@ transform_w = Matrix(4, 4, [
     [1, 0, 0, 0],
     [0, 1, 0, 0],
     [0, 0, 1, 0],
-    [0, 1, 0, 1]
+    [0, 4, 0, 1]
 ])
 
 transform_a = Matrix(4, 4, [
     [1, 0, 0, 0],
     [0, 1, 0, 0],
     [0, 0, 1, 0],
-    [1, 0, 0, 1]
+    [4, 0, 0, 1]
 ])
 
 transform_s = Matrix(4, 4, [
     [1, 0, 0, 0],
     [0, 1, 0, 0],
     [0, 0, 1, 0],
-    [0, -1, 0, 1]
+    [0, -4, 0, 1]
 ])
 
 transform_d = Matrix(4, 4, [
     [1, 0, 0, 0],
     [0, 1, 0, 0],
     [0, 0, 1, 0],
-    [-1, 0, 0, 1]
+    [-4, 0, 0, 1]
 ])
 
-transform_q = Matrix(4, 4, [
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-    [0, 0, 1, 1]
+a = 0.1
+transform_rot_up = Matrix(4, 4, [
+    [1, 0,       0,      0],
+    [0, cos(a),  sin(a), 0],
+    [0, -sin(a), cos(a), 0],
+    [0, 0,       0,      1]
 ])
 
-transform_e = Matrix(4, 4, [
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-    [0, 0, -1, 1]
+transform_rot_down = Matrix(4, 4, [
+    [1, 0,        0,       0],
+    [0, cos(-a),  sin(-a), 0],
+    [0, -sin(-a), cos(-a), 0],
+    [0, 0,        0,       1]
+])
+
+transform_rot_left = Matrix(4, 4, [
+    [cos(-a), 0, -sin(-a), 0],
+    [0,       1, 0,        0],
+    [sin(-a), 0, cos(-a),  0],
+    [0,       0, 0,        1]
+])
+
+transform_rot_right = Matrix(4, 4, [
+    [cos(a), 0, -sin(a), 0],
+    [0,      1, 0,       0],
+    [sin(a), 0, cos(a),  0],
+    [0,      0, 0,       1]
 ])
 
 # coordinates of the view pyramid's vertices
@@ -69,10 +85,10 @@ l, t, r, b = -40, 30, 40, -30
 n, f = 20, 100
 
 proj_matrix = Matrix(4, 4, [
-    [2*n/(r-l), 0, 0, 0],
-    [0, 2*n/(t-b), 0, 0],
+    [2*n/(r-l),   0,           0,             0],
+    [0,           2*n/(t-b),   0,             0],
     [(r+l)/(r-l), (t+b)/(t-b), -(f+n)/(f-n), -1],
-    [0, 0, -2*f*n/(f-n), 0]
+    [0,           0,           -2*f*n/(f-n),  0]
 ])
 
 pyramid = Object(pyramid_model)
@@ -83,10 +99,11 @@ pyramid.toNDC()
 pyramid.toScreen()
 
 a, w, s, d, q, e = False, False, False, False, False, False
+rot_up, rot_down, rot_left, rot_right = False, False, False, False
 
 
 def bindings():
-    global a, w, s, d, q, e
+    global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right
 
     def move_w(event):
         global w
@@ -107,16 +124,26 @@ def bindings():
         global d
         if not d:
             d = True
-
-    def move_q(event):
-        global q
-        if not q:
-            q = True
-
-    def move_e(event):
-        global e
-        if not e:
-            e = True
+            
+    def move_rot_up(event):
+        global rot_up
+        if not rot_up:
+            rot_up = True
+    
+    def move_rot_down(event):
+        global rot_down
+        if not rot_down:
+            rot_down = True
+            
+    def move_rot_left(event):
+        global rot_left
+        if not rot_left:
+            rot_left = True
+            
+    def move_rot_right(event):
+        global rot_right
+        if not rot_right:
+            rot_right = True
 
     def stop_w(event):
         global w
@@ -134,26 +161,41 @@ def bindings():
         global d
         d = False
 
-    def stop_q(event):
-        global q
-        q = False
-
-    def stop_e(event):
-        global e
-        e = False
+    def stop_rot_up(event):
+        global rot_up
+        rot_up = False
+        
+    def stop_rot_down(event):
+        global rot_down
+        rot_down = False
+        
+    def stop_rot_left(event):
+        global rot_left
+        rot_left = False
+        
+    def stop_rot_right(event):
+        global rot_right
+        rot_right = False
 
     root.bind('w', move_w)
     root.bind('s', move_s)
     root.bind('a', move_a)
     root.bind('d', move_d)
-    root.bind('q', move_q)
-    root.bind('e', move_e)
+    root.bind('<Up>', move_rot_up)
+    root.bind('<Down>', move_rot_down)
+    root.bind('<Left>', move_rot_left)
+    root.bind('<Right>', move_rot_right)
     root.bind('<KeyRelease-w>', stop_w)
     root.bind('<KeyRelease-s>', stop_s)
     root.bind('<KeyRelease-a>', stop_a)
     root.bind('<KeyRelease-d>', stop_d)
-    root.bind('<KeyRelease-q>', stop_q)
-    root.bind('<KeyRelease-e>', stop_e)
+    root.bind('<KeyRelease-Up>', stop_rot_up)
+    root.bind('<KeyRelease-Down>', stop_rot_down)
+    root.bind('<KeyRelease-Left>', stop_rot_left)
+    root.bind('<KeyRelease-Right>', stop_rot_right)
+
+
+# canv.focus_set()
 
 
 bindings()
@@ -175,7 +217,7 @@ p5 = canv.create_polygon(*pyramid.prims[4].s_crds[0], *pyramid.prims[4].s_crds[1
 
 
 def loop():
-    global a, w, s, d, q, e
+    global a, w, s, d, rot_up, rot_down, rot_left, rot_right
     if w:
         pyramid.toWorld(transform_w)
 
@@ -188,11 +230,17 @@ def loop():
     if d:
         pyramid.toWorld(transform_d)
 
-    if q:
-        pyramid.toWorld(transform_q)
+    if rot_up:
+        pyramid.toWorld(transform_rot_up)
 
-    if e:
-        pyramid.toWorld(transform_e)
+    if rot_left:
+        pyramid.toWorld(transform_rot_left)
+
+    if rot_down:
+        pyramid.toWorld(transform_rot_down)
+
+    if rot_right:
+        pyramid.toWorld(transform_rot_right)
 
     pyramid.toCamera(matr_E(4))
     pyramid.toProjection(proj_matrix)
@@ -213,7 +261,7 @@ def loop():
     #                     *pyramid.prims[5].s_crds[2], *pyramid.prims[5].s_crds[3],)
 
     canv.update()
-    root.after(10, loop)
+    root.after(20, loop)
 
 
 loop()
