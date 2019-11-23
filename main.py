@@ -1,6 +1,6 @@
 """
 This is a basic example of using KekGL
-Use 'a', 'w', 's', 'd', 'q', 'e' to move
+Use 'a', 'w', 's', 'd' to move, arrows to rotate
 """
 
 
@@ -15,6 +15,7 @@ root.geometry('800x600')
 root.resizable(False, False)
 canv = Canvas(root, bg='white')
 canv.pack(fill=BOTH, expand=1)
+
 
 transform_1 = Matrix(4, 4, [
     [2, 0, 0, 0],
@@ -195,10 +196,8 @@ def bindings():
     root.bind('<KeyRelease-Right>', stop_rot_right)
 
 
-# canv.focus_set()
-
-
 bindings()
+
 
 p1 = canv.create_polygon(*pyramid.prims[0].s_crds[0], *pyramid.prims[0].s_crds[1],
                          *pyramid.prims[0].s_crds[2], *pyramid.prims[0].s_crds[3], outline='blue', width=2)
@@ -211,13 +210,16 @@ p4 = canv.create_polygon(*pyramid.prims[3].s_crds[0], *pyramid.prims[3].s_crds[1
 p5 = canv.create_polygon(*pyramid.prims[4].s_crds[0], *pyramid.prims[4].s_crds[1],
                          *pyramid.prims[4].s_crds[2], *pyramid.prims[4].s_crds[3], outline='blue', width=2, fill='red')
 
+prims_list = [p1, p2, p3, p4, p5]
+
 
 # p6 = canv.create_polygon(*pyramid.prims[5].s_crds[0], *pyramid.prims[5].s_crds[1],
 #                     *pyramid.prims[5].s_crds[2], *pyramid.prims[5].s_crds[3], outline='green', width=2)
 
 
 def loop():
-    global a, w, s, d, rot_up, rot_down, rot_left, rot_right
+    global a, w, s, d, rot_up, rot_down, rot_left, rot_right, prims_list
+    # This will only work properly if the initial position of the camera was left the same!!!
     if w:
         pyramid.toWorld(transform_w)
 
@@ -243,6 +245,14 @@ def loop():
         pyramid.toWorld(transform_rot_right)
 
     pyramid.toCamera(matr_E(4))
+
+    if pyramid.isInFront():
+        for i in range(5):
+            canv.itemconfigure(prims_list[i], state='normal')
+    else:
+        for i in range(5):
+            canv.itemconfigure(prims_list[i], state='hidden')
+
     pyramid.toProjection(proj_matrix)
     pyramid.toNDC()
     pyramid.toScreen()

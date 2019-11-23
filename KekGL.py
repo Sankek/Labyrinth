@@ -27,7 +27,7 @@ class Prim:
     def toWorld(self, matrix, *args, **kwargs):
         self.w_crds *= matrix
 
-    # Setting position and direction relative to the camera
+    # Setting position and direction relative to the camera (input matrix should be inverse camera matrix)
     def toCamera(self, matrix, *args, **kwargs):
         self.c_crds = self.w_crds*matrix
 
@@ -44,6 +44,13 @@ class Prim:
         self.s_crds = Matrix(self.num_of_vertices, 2)
         for i in range(self.num_of_vertices):  # TODO: common case for width and height
             self.s_crds.set_row(i, [400*(self.p_crds[i][0]+1), 300*(self.p_crds[i][1]+1)])
+
+    def isInFront(self):
+        for i in range(self.num_of_vertices):
+            if self.c_crds[i][2] >= -20:
+                return False
+
+        return True
 
 
 class Object:
@@ -76,6 +83,10 @@ class Object:
     def toScreen(self):
         for prim in self.prims:
             prim.toScreen()
+
+    def isInFront(self):
+        for prim in self.prims:
+            return prim.isInFront()
 
 
 class Player:
