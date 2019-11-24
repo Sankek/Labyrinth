@@ -299,7 +299,6 @@ prims_list = [p1, p2, p3, p4, p5]
 # p6 = canv.create_polygon(*pyramid.prims[5].s_crds[0], *pyramid.prims[5].s_crds[1],
 #                     *pyramid.prims[5].s_crds[2], *pyramid.prims[5].s_crds[3], outline='green', width=2)
 
-
 def loop():
     global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, prims_list, angle
     # This will only work properly if the initial position of the camera was left the same!!!
@@ -336,16 +335,16 @@ def loop():
         pyramid.toWorld(tr_rot_right(angle))
 
     pyramid.toCamera(matr_E(4))
+    pyramid.toProjection(proj_matrix)
+    pyramid.toNDC()
 
-    if pyramid.isInFront():
+    if pyramid.isVisible():
         for i in range(5):
             canv.itemconfigure(prims_list[i], state='normal')
     else:
         for i in range(5):
             canv.itemconfigure(prims_list[i], state='hidden')
 
-    pyramid.toProjection(proj_matrix)
-    pyramid.toNDC()
     pyramid.toScreen()
 
     canv.coords(p1, *pyramid.prims[0].s_crds[0], *pyramid.prims[0].s_crds[1],

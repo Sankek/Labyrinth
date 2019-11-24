@@ -52,6 +52,17 @@ class Prim:
 
         return True
 
+    # should be inited after self.toNDC()
+    def isVisible(self):
+        if self.isInFront():
+            for i in range(self.num_of_vertices):
+                # comparing coordinates with far plane sides coordinates
+                if abs(self.p_crds[i][0]) >= 1 or abs(self.p_crds[i][1]) >= 1:
+                    return False
+            return True
+        else:
+            return False
+
 
 class Object:
     """ Class that makes primitives from a model
@@ -86,7 +97,17 @@ class Object:
 
     def isInFront(self):
         for prim in self.prims:
-            return prim.isInFront()
+            if not prim.isInFront():
+                return False
+
+        return True
+
+    def isVisible(self):
+        for prim in self.prims:
+            if not prim.isVisible():
+                return False
+
+        return True
 
 
 class Player:
