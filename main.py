@@ -19,26 +19,19 @@ canv.pack(fill=BOTH, expand=1)
 
 transform_1 = Matrix(4, 4, [
     [2, 0, 0, 0],
-    [0, 2, 0, 0],
     [0, 0, 2, 0],
-    [0, 0, -60, 1]
+    [0, -2, 0, 0],
+    [0, 25, -80, 1]
 ])
 
-transform_w = Matrix(4, 4, [
+transform_along_y1 = Matrix(4, 4, [
     [1, 0, 0, 0],
     [0, 1, 0, 0],
     [0, 0, 1, 0],
     [0, 4, 0, 1]
 ])
 
-transform_a = Matrix(4, 4, [
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-    [4, 0, 0, 1]
-])
-
-transform_s = Matrix(4, 4, [
+transform_along_y2 = Matrix(4, 4, [
     [1, 0, 0, 0],
     [0, 1, 0, 0],
     [0, 0, 1, 0],
@@ -50,6 +43,13 @@ transform_d = Matrix(4, 4, [
     [0, 1, 0, 0],
     [0, 0, 1, 0],
     [-4, 0, 0, 1]
+])
+
+transform_a = Matrix(4, 4, [
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [4, 0, 0, 1]
 ])
 
 transform_q = Matrix(4, 4, [
@@ -83,7 +83,26 @@ transform_rot_down = Matrix(4, 4, [
 ])
 
 
-# this two matrices rotate camera relative to the world vertical axis
+# these two matrices move camera along world's horizontal axis
+def transform_w(phi):
+    return Matrix(4, 4, [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -4*sin(phi), 4*cos(phi), 1]
+    ])
+
+
+def transform_s(phi):
+    return Matrix(4, 4, [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 4*sin(phi), -4*cos(phi), 1]
+    ])
+
+
+# these two matrices rotate camera relative to the world vertical axis
 def tr_rot_right(phi):
     global ang
     c = cos(ang)
@@ -303,13 +322,13 @@ def loop():
     global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, prims_list, angle
     # This will only work properly if the initial position of the camera was left the same!!!
     if w:
-        pyramid.toWorld(transform_w)
+        pyramid.toWorld(transform_w(angle))
 
     if a:
         pyramid.toWorld(transform_a)
 
     if s:
-        pyramid.toWorld(transform_s)
+        pyramid.toWorld(transform_s(angle))
 
     if d:
         pyramid.toWorld(transform_d)
