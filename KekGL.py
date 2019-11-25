@@ -47,21 +47,24 @@ class Prim:
 
     def isInFront(self):
         for i in range(self.num_of_vertices):
-            if self.c_crds[i][2] >= -20:
+            if self.c_crds[i][2] >= 0:
                 return False
 
         return True
 
     # should be inited after self.toNDC()
     def isVisible(self):
-        if self.isInFront():
-            for i in range(self.num_of_vertices):
-                # comparing coordinates with far plane sides coordinates
-                if abs(self.p_crds[i][0]) >= 1 or abs(self.p_crds[i][1]) >= 1:
-                    return False
-            return True
-        else:
-            return False
+        # if self.isInFront():
+        #     for i in range(self.num_of_vertices):
+        #         # comparing coordinates with far plane sides coordinates
+        #         if abs(self.p_crds[i][0]) >= 1 or abs(self.p_crds[i][1]) >= 1:
+        #             return False
+        #     return True
+        # else:
+        #     return False
+        return self.isInFront()
+
+
 
 
 class Object:
