@@ -96,7 +96,7 @@ def transform_w(phi):
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -4*sin(phi), 4*cos(phi), 1]
+        [0, -0.4*sin(phi), 0.4*cos(phi), 1]
     ])
 
 
@@ -105,7 +105,7 @@ def transform_s(phi):
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, 4*sin(phi), -4*cos(phi), 1]
+        [0, 0.4*sin(phi), -0.4*cos(phi), 1]
     ])
 
 
@@ -341,6 +341,9 @@ prims_corner_list = [c1, c2, c3, c4]
 # p6 = canv.create_polygon(*pyramid.prims[5].s_crds[0], *pyramid.prims[5].s_crds[1],
 #                     *pyramid.prims[5].s_crds[2], *pyramid.prims[5].s_crds[3], outline='green', width=2)
 
+debug_canv_text = canv.create_text(200, 100, fill="darkblue", font="Times 20 italic bold")
+
+
 def loop():
     global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, prims_list, angle
     # This will only work properly if the initial position of the camera was left the same!!!
@@ -432,6 +435,14 @@ def loop():
     canv.coords(c4, *corner.prims[3].s_crds[0], *corner.prims[3].s_crds[1],
                 *corner.prims[3].s_crds[2], *corner.prims[3].s_crds[3], )
 
+    debug_text_matrix = corner.prims[0].p_crds*1
+    debug_text = 'yellow wall NDC crds:\n'
+    for row in range(debug_text_matrix.rows):
+        for col in range(debug_text_matrix.cols):
+            debug_text_matrix[row][col] = round(debug_text_matrix[row][col], 3)
+        debug_text += str(debug_text_matrix[row]) + '\n'
+
+    canv.itemconfigure(debug_canv_text, text=debug_text)
     canv.update()
     root.after(20, loop)
 
