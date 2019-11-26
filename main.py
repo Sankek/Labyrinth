@@ -96,7 +96,7 @@ def transform_w(phi):
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -0.4*sin(phi), 0.4*cos(phi), 1]
+        [0, -2*sin(phi), 2*cos(phi), 1]
     ])
 
 
@@ -105,7 +105,7 @@ def transform_s(phi):
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, 0.4*sin(phi), -0.4*cos(phi), 1]
+        [0, 2*sin(phi), -2*cos(phi), 1]
     ])
 
 
@@ -313,26 +313,23 @@ def bindings():
 
 bindings()
 
+def toCanv(prim):
+    crds_row = []
+    for i in range(prim.s_crds.rows):
+        crds_row += prim.s_crds[i]
+    return crds_row
 
-p1 = canv.create_polygon(*pyramid.prims[0].s_crds[0], *pyramid.prims[0].s_crds[1],
-                         *pyramid.prims[0].s_crds[2], *pyramid.prims[0].s_crds[3], outline='blue', width=2)
-p2 = canv.create_polygon(*pyramid.prims[1].s_crds[0], *pyramid.prims[1].s_crds[1],
-                         *pyramid.prims[1].s_crds[2], *pyramid.prims[1].s_crds[3], outline='green', width=2)
-p3 = canv.create_polygon(*pyramid.prims[2].s_crds[0], *pyramid.prims[2].s_crds[1],
-                         *pyramid.prims[2].s_crds[2], *pyramid.prims[2].s_crds[3], outline='blue', width=2)
-p4 = canv.create_polygon(*pyramid.prims[3].s_crds[0], *pyramid.prims[3].s_crds[1],
-                         *pyramid.prims[3].s_crds[2], *pyramid.prims[3].s_crds[3], outline='green', width=2)
-p5 = canv.create_polygon(*pyramid.prims[4].s_crds[0], *pyramid.prims[4].s_crds[1],
-                         *pyramid.prims[4].s_crds[2], *pyramid.prims[4].s_crds[3], outline='blue', width=2, fill='red')
 
-c1 = canv.create_polygon(*corner.prims[0].s_crds[0], *corner.prims[0].s_crds[1],
-                         *corner.prims[0].s_crds[2], *corner.prims[0].s_crds[3], outline='blue', width=2, fill='yellow')
-c2 = canv.create_polygon(*corner.prims[1].s_crds[0], *corner.prims[1].s_crds[1],
-                         *corner.prims[1].s_crds[2], *corner.prims[1].s_crds[3], outline='green', width=2)
-c3 = canv.create_polygon(*corner.prims[2].s_crds[0], *corner.prims[2].s_crds[1],
-                         *corner.prims[2].s_crds[2], *corner.prims[2].s_crds[3], outline='blue', width=2)
-c4 = canv.create_polygon(*corner.prims[3].s_crds[0], *corner.prims[3].s_crds[1],
-                         *corner.prims[3].s_crds[2], *corner.prims[3].s_crds[3], outline='green', width=2)
+p1 = canv.create_polygon(*toCanv(pyramid.prims[0]), outline='blue', width=2, fill='green')
+p2 = canv.create_polygon(*toCanv(pyramid.prims[1]), outline='green', width=2)
+p3 = canv.create_polygon(*toCanv(pyramid.prims[2]), outline='blue', width=2)
+p4 = canv.create_polygon(*toCanv(pyramid.prims[3]), outline='green', width=2)
+p5 = canv.create_polygon(*toCanv(pyramid.prims[4]), outline='blue', width=2, fill='red')
+
+c1 = canv.create_polygon(*toCanv(corner.prims[0]), outline='blue', width=2, fill='yellow')
+c2 = canv.create_polygon(*toCanv(corner.prims[1]), outline='green', width=2)
+c3 = canv.create_polygon(*toCanv(corner.prims[2]), outline='blue', width=2)
+c4 = canv.create_polygon(*toCanv(corner.prims[3]), outline='green', width=2)
 
 prims_list = [p1, p2, p3, p4, p5]
 prims_corner_list = [c1, c2, c3, c4]
@@ -341,7 +338,9 @@ prims_corner_list = [c1, c2, c3, c4]
 # p6 = canv.create_polygon(*pyramid.prims[5].s_crds[0], *pyramid.prims[5].s_crds[1],
 #                     *pyramid.prims[5].s_crds[2], *pyramid.prims[5].s_crds[3], outline='green', width=2)
 
-debug_canv_text = canv.create_text(200, 100, fill="darkblue", font="Times 20 italic bold")
+debug_canv_text = canv.create_text(200, 100, fill="darkblue", font="Times 10 italic bold")
+debug_canv_text2 = canv.create_text(600, 100, fill="darkblue", font="Times 10 italic bold")
+
 
 
 def loop():
@@ -402,7 +401,7 @@ def loop():
     else:
         for i in range(5):
             canv.itemconfigure(prims_list[i], state='hidden')
-            
+
     if corner.isVisible():
         for i in range(4):
             canv.itemconfigure(prims_corner_list[i], state='normal')
@@ -412,37 +411,35 @@ def loop():
 
     pyramid.toScreen()
     corner.toScreen()
+    canv.coords(p1, *toCanv(pyramid.prims[0]))
+    canv.coords(p2, *toCanv(pyramid.prims[1]))
+    canv.coords(p3, *toCanv(pyramid.prims[2]))
+    canv.coords(p4, *toCanv(pyramid.prims[3]))
+    canv.coords(p5, *toCanv(pyramid.prims[4]))
+    # canv.coords(p6, *toCanv(pyramid.prims[5]))
 
-    canv.coords(p1, *pyramid.prims[0].s_crds[0], *pyramid.prims[0].s_crds[1],
-                *pyramid.prims[0].s_crds[2], *pyramid.prims[0].s_crds[3], )
-    canv.coords(p2, *pyramid.prims[1].s_crds[0], *pyramid.prims[1].s_crds[1],
-                *pyramid.prims[1].s_crds[2], *pyramid.prims[1].s_crds[3], )
-    canv.coords(p3, *pyramid.prims[2].s_crds[0], *pyramid.prims[2].s_crds[1],
-                *pyramid.prims[2].s_crds[2], *pyramid.prims[2].s_crds[3], )
-    canv.coords(p4, *pyramid.prims[3].s_crds[0], *pyramid.prims[3].s_crds[1],
-                *pyramid.prims[3].s_crds[2], *pyramid.prims[3].s_crds[3], )
-    canv.coords(p5, *pyramid.prims[4].s_crds[0], *pyramid.prims[4].s_crds[1],
-                *pyramid.prims[4].s_crds[2], *pyramid.prims[4].s_crds[3], )
-    # canv.coords(p6, *pyramid.prims[5].s_crds[0], *pyramid.prims[5].s_crds[1],
-    #                     *pyramid.prims[5].s_crds[2], *pyramid.prims[5].s_crds[3],)
+    canv.coords(c1, *toCanv(corner.prims[0]))
+    canv.coords(c2, *toCanv(corner.prims[1]))
+    canv.coords(c3, *toCanv(corner.prims[2]))
+    canv.coords(c4, *toCanv(corner.prims[3]))
 
-    canv.coords(c1, *corner.prims[0].s_crds[0], *corner.prims[0].s_crds[1],
-                *corner.prims[0].s_crds[2], *corner.prims[0].s_crds[3], )
-    canv.coords(c2, *corner.prims[1].s_crds[0], *corner.prims[1].s_crds[1],
-                *corner.prims[1].s_crds[2], *corner.prims[1].s_crds[3], )
-    canv.coords(c3, *corner.prims[2].s_crds[0], *corner.prims[2].s_crds[1],
-                *corner.prims[2].s_crds[2], *corner.prims[2].s_crds[3], )
-    canv.coords(c4, *corner.prims[3].s_crds[0], *corner.prims[3].s_crds[1],
-                *corner.prims[3].s_crds[2], *corner.prims[3].s_crds[3], )
+    debug_text_matrix = corner.prims[0].c_crds*1
+    debug_text2_matrix = corner.prims[0].test_crds*1
 
-    debug_text_matrix = corner.prims[0].p_crds*1
-    debug_text = 'yellow wall NDC crds:\n'
+    debug_text = 'yellow wall camera crds:\n'
     for row in range(debug_text_matrix.rows):
         for col in range(debug_text_matrix.cols):
             debug_text_matrix[row][col] = round(debug_text_matrix[row][col], 3)
         debug_text += str(debug_text_matrix[row]) + '\n'
 
+    debug_text2 = 'yellow wall to projection crds:\n'
+    for row in range(debug_text2_matrix.rows):
+        for col in range(debug_text2_matrix.cols):
+            debug_text2_matrix[row][col] = round(debug_text2_matrix[row][col], 3)
+        debug_text2 += str(debug_text2_matrix[row])+'\n'
+
     canv.itemconfigure(debug_canv_text, text=debug_text)
+    canv.itemconfigure(debug_canv_text2, text=debug_text2)
     canv.update()
     root.after(20, loop)
 
