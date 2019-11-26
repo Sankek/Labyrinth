@@ -9,9 +9,12 @@ from KekGL import *
 from models import pyramid_model, corner_model
 from math import cos, sin, pi
 
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
 root = Tk()
 fr = Frame(root)
-root.geometry('800x600')
+root.geometry(str(SCREEN_WIDTH)+'x'+str(SCREEN_HEIGHT))
 root.resizable(False, False)
 canv = Canvas(root, bg='white')
 canv.pack(fill=BOTH, expand=1)
@@ -183,13 +186,13 @@ pyramid.toWorld(transform_1)
 pyramid.toCamera(matr_E(4))
 pyramid.toProjection(proj_matrix)
 pyramid.toNDC()
-pyramid.toScreen()
+pyramid.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
 corner = Object(corner_model)
 corner.toWorld(transform_corner_start)
 corner.toCamera(matr_E(4))
 corner.toProjection(proj_matrix)
 corner.toNDC()
-corner.toScreen()
+corner.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 a, w, s, d, q, e = False, False, False, False, False, False
 rot_up, rot_down, rot_left, rot_right = False, False, False, False
@@ -313,6 +316,7 @@ def bindings():
 
 bindings()
 
+
 def toCanv(prim):
     crds_row = []
     for i in range(prim.s_crds.rows):
@@ -337,10 +341,6 @@ prims_corner_list = [c1, c2, c3, c4]
 
 # p6 = canv.create_polygon(*pyramid.prims[5].s_crds[0], *pyramid.prims[5].s_crds[1],
 #                     *pyramid.prims[5].s_crds[2], *pyramid.prims[5].s_crds[3], outline='green', width=2)
-
-debug_canv_text = canv.create_text(200, 100, fill="darkblue", font="Times 10 italic bold")
-debug_canv_text2 = canv.create_text(600, 100, fill="darkblue", font="Times 10 italic bold")
-
 
 
 def loop():
@@ -395,22 +395,8 @@ def loop():
     corner.toProjection(proj_matrix)
     corner.toNDC()
 
-    if pyramid.isVisible():
-        for i in range(5):
-            canv.itemconfigure(prims_list[i], state='normal')
-    else:
-        for i in range(5):
-            canv.itemconfigure(prims_list[i], state='hidden')
-
-    if corner.isVisible():
-        for i in range(4):
-            canv.itemconfigure(prims_corner_list[i], state='normal')
-    else:
-        for i in range(4):
-            canv.itemconfigure(prims_corner_list[i], state='hidden')
-
-    pyramid.toScreen()
-    corner.toScreen()
+    pyramid.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
+    corner.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
     canv.coords(p1, *toCanv(pyramid.prims[0]))
     canv.coords(p2, *toCanv(pyramid.prims[1]))
     canv.coords(p3, *toCanv(pyramid.prims[2]))
@@ -423,23 +409,6 @@ def loop():
     canv.coords(c3, *toCanv(corner.prims[2]))
     canv.coords(c4, *toCanv(corner.prims[3]))
 
-    debug_text_matrix = corner.prims[0].c_crds*1
-    debug_text2_matrix = corner.prims[0].test_crds*1
-
-    debug_text = 'yellow wall camera crds:\n'
-    for row in range(debug_text_matrix.rows):
-        for col in range(debug_text_matrix.cols):
-            debug_text_matrix[row][col] = round(debug_text_matrix[row][col], 3)
-        debug_text += str(debug_text_matrix[row]) + '\n'
-
-    debug_text2 = 'yellow wall to projection crds:\n'
-    for row in range(debug_text2_matrix.rows):
-        for col in range(debug_text2_matrix.cols):
-            debug_text2_matrix[row][col] = round(debug_text2_matrix[row][col], 3)
-        debug_text2 += str(debug_text2_matrix[row])+'\n'
-
-    canv.itemconfigure(debug_canv_text, text=debug_text)
-    canv.itemconfigure(debug_canv_text2, text=debug_text2)
     canv.update()
     root.after(20, loop)
 
