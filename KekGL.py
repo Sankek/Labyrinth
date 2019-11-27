@@ -44,7 +44,7 @@ class Prim:
 
     def toScreen(self, width, height):
         self.s_crds = Matrix(self.p_crds.rows, 2)
-        for i in range(self.p_crds.rows):  # TODO: common case for width and height
+        for i in range(self.p_crds.rows):
             self.s_crds.set_row(i, [width/2*(self.ndc_crds[i][0]+1), height/2*(self.ndc_crds[i][1]+1)])
 
     @staticmethod
@@ -137,7 +137,7 @@ class Prim:
     def isFullyVisible(self):
         if self.isInFront():
             for i in range(self.num_of_vertices):
-                if abs(self.p_crds[i][0]) >= 1 or abs(self.p_crds[i][1]) >= 1:
+                if abs(self.ndc_crds[i][0]) >= 1 or abs(self.ndc_crds[i][1]) >= 1:
                     return False
             return True
         else:

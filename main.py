@@ -334,9 +334,10 @@ c1 = canv.create_polygon(*toCanv(corner.prims[0]), outline='blue', width=2, fill
 c2 = canv.create_polygon(*toCanv(corner.prims[1]), outline='green', width=2)
 c3 = canv.create_polygon(*toCanv(corner.prims[2]), outline='blue', width=2)
 c4 = canv.create_polygon(*toCanv(corner.prims[3]), outline='green', width=2)
+c5 = canv.create_polygon(*toCanv(corner.prims[4]), outline='green', width=2)
 
 prims_list = [p1, p2, p3, p4, p5]
-prims_corner_list = [c1, c2, c3, c4]
+prims_corner_list = [c1, c2, c3, c4, c5]
 
 
 # p6 = canv.create_polygon(*pyramid.prims[5].s_crds[0], *pyramid.prims[5].s_crds[1],
@@ -408,6 +409,7 @@ def loop():
     canv.coords(c2, *toCanv(corner.prims[1]))
     canv.coords(c3, *toCanv(corner.prims[2]))
     canv.coords(c4, *toCanv(corner.prims[3]))
+    canv.coords(c5, *toCanv(corner.prims[4]))
 
     canv.update()
     root.after(20, loop)
