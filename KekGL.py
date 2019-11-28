@@ -5,7 +5,6 @@ Note that in KekGl row-major matrix order is used.
 """
 
 from matrix import *
-from copy import deepcopy
 
 
 class Prim:
@@ -20,62 +19,65 @@ class Prim:
         self.w_crds = Matrix(len(crds), 4)
         for i in range(len(crds)):
             self.w_crds.set_row(i, list(crds[i])+[1])
-        self.c_crds = self.w_crds*1
+        self.c_crds = None
         self.p_crds = None
+        self.ndc_crds = None
         self.s_crds = None
 
     # Setting position and direction of the primitive in the world
-    def toWorld(self, matrix, **kwargs):
+    def toWorld(self, matrix):
         self.w_crds *= matrix
 
     # Setting position and direction relative to the camera (input matrix should be inverse camera matrix)
-    def toCamera(self, matrix, *args, **kwargs):
+    def toCamera(self, matrix):
         self.c_crds = self.w_crds*matrix
 
     # Getting projected coordinates using projection matrix
-    def toProjection(self, matrix, *args, **kwargs):
-        self.p_crds = self._algorithm(1)*matrix
-        # self.p_crds = self.c_crds*matrix
-        self.test_crds = self._algorithm(1)*1
+    def toProjection(self, matrix):
+        self.p_crds = self._rear_clipping_algorithm(1)*matrix
+        self.test_crds = self._rear_clipping_algorithm(1)
 
     # NDC is normalized device coordinates
     def toNDC(self):
+        self.ndc_crds = self.p_crds*1
         for i in range(self.p_crds.rows):
-            self.p_crds.set_row(i, [a/self.p_crds[i][3] for a in self.p_crds[i]])
+            self.ndc_crds.set_row(i, [a/self.p_crds[i][3] for a in self.p_crds[i]])
 
-    def toScreen(self):
+    def toScreen(self, width, height):
         self.s_crds = Matrix(self.p_crds.rows, 2)
-        for i in range(self.p_crds.rows):  # TODO: common case for width and height
-            self.s_crds.set_row(i, [400*(self.p_crds[i][0]+1), 300*(self.p_crds[i][1]+1)])
+        for i in range(self.p_crds.rows):
+            self.s_crds.set_row(i, [width/2*(self.ndc_crds[i][0]+1), height/2*(self.ndc_crds[i][1]+1)])
 
     @staticmethod
-    # finds intersection of line p1p2 with plane z+dx=0
-    def _intersec(x, y, dx):
-        p1 = deepcopy(x)
-        p2 = deepcopy(y)
-        t = -(p1[2]+dx)/(p2[2]-p1[2])
-        return [[p1[0]+(p2[0]-p1[0])*t, p1[1]+(p2[1]-p1[1])*t, -dx, 1]]
+    # finds intersection of line p1p2 with plane z+dz=0
+    def _intersec(p1, p2, dz):
+        t = -(p1[2]+dz)/(p2[2]-p1[2])
+        return [p1[0]+(p2[0]-p1[0])*t, p1[1]+(p2[1]-p1[1])*t, -dz, 1]
 
-    def _algorithm(self, dx):
+    def _rear_clipping_algorithm(self, dz):
+        """ Clips polygons with plane z=0 and returns new polygon's matrix
+
+        It checks every two points starting from the visible one. Depending on the sign
+        of their z-coordinate a new point added or not to the new list of coordinates.
+        Clipping points have z = -dx coordinate to project correctly.
+        Too big or too small values of dz can produce glitches. dz = 1 seems to be fine"""
         crds_list = []
-        p_start = None
+        p_prev = None
 
         for i in range(self.c_crds.rows):
             if self.c_crds[i][2] < 0:
-                p_start = deepcopy(self.c_crds[i])
-                # crds_list += deepcopy([p_start])
                 try:
-                    p_curr = deepcopy(self.c_crds[i+1])
+                    p_curr = [*self.c_crds[i+1]]
                     i_curr = i+1
                 except IndexError:
-                    p_curr = deepcopy(self.c_crds[0])
+                    p_curr = [*self.c_crds[0]]
                     i_curr = 0
-                p_prev = deepcopy(p_start)
+                p_prev = [*self.c_crds[i]]
                 prev = 1
                 break
 
-        if p_start is None:
-            return Matrix(2, 4, [[10, 0, 1, 1], [10, 0, 1, 1]])  # making a point which will be invisible
+        if p_prev is None:
+            return Matrix(2, 4, [[10, 0, 1, 1], [10, 0, 1, 1]])  # returns invisible polygon
 
         counter = 0
         while counter != self.c_crds.rows:
@@ -88,78 +90,59 @@ class Prim:
 
             while True:
                 if curr == -1 and prev == 1:
-                    crds_list += deepcopy(self._intersec(p_curr, p_prev, dx))
+                    crds_list += [self._intersec(p_curr, p_prev, dz)]
                     break
                 if curr == 0 and prev == 1:
-                    crds_list += deepcopy(self._intersec(p_curr, p_prev, dx))
+                    crds_list += [self._intersec(p_curr, p_prev, dz)]
                     break
                 if curr == 1 and prev == 1:
-                    crds_list += deepcopy([p_curr])
+                    crds_list += [p_curr]
                     break
                 if curr == -1 and prev == -1:
                     break
                 if curr == 0 and prev == -1:
                     break
                 if curr == 1 and prev == -1:
-                    crds_list += deepcopy(self._intersec(p_curr, p_prev, dx))
-                    crds_list += deepcopy([p_curr])
+                    crds_list += [self._intersec(p_curr, p_prev, dz)]
+                    crds_list += [p_curr]
                     break
                 if curr == -1 and prev == 0:
                     break
                 if curr == 0 and prev == 0:
                     break
                 if curr == 1 and prev == 0:
-                    crds_list += deepcopy(self._intersec(p_curr, p_prev, dx))
-                    crds_list += deepcopy([p_curr])
+                    crds_list += [self._intersec(p_curr, p_prev, dz)]
+                    crds_list += [p_curr]
                     break
 
-            p_prev = deepcopy(p_curr)
+            p_prev = p_curr
             prev = curr
             i_curr += 1
             counter += 1
             try:
-                p_curr = deepcopy(self.c_crds[i_curr])
+                p_curr = [*self.c_crds[i_curr]]
             except IndexError:
-                p_curr = deepcopy(self.c_crds[0])
+                p_curr = [*self.c_crds[0]]
                 i_curr = 0
-
 
         return Matrix(len(crds_list), 4, crds_list)
 
-        # if self.c_crds[0][2] < 0:
-        #     crds_list += self.c_crds[0]
-        #
-        #     if self.c_crds[0+1][2] > 0:
-        #         crds_list += self._intersec(self.c_crds[0], self.c_crds[0+1], dx)
-        #
-        #         if self.c_crds[0+2][2] > 0:
-        #             pass
-        #
-        #         if self.c_crds[0+2][2] == 0:
-        #
-        #     return Matrix(len(crds_list), 4, crds_list)
-        #
-        # return Matrix(2, 4, [[0, 0, 1, 1], [0, 0, 1, 1]])  # making a point which will be invisible
-
     def isInFront(self):
-        # for i in range(self.num_of_vertices):
-        #     if self.c_crds[i][2] >= 0:
-        #         return False
+        for i in range(self.num_of_vertices):
+            if self.c_crds[i][2] >= 0:
+                return False
 
         return True
 
     # should be inited after self.toNDC()
-    def isVisible(self):
-        # if self.isInFront():
-        #     for i in range(self.num_of_vertices):
-        #         # comparing coordinates with far plane sides coordinates
-        #         if abs(self.p_crds[i][0]) >= 1 or abs(self.p_crds[i][1]) >= 1:
-        #             return False
-        #     return True
-        # else:
-        #     return False
-
-        return True
+    def isFullyVisible(self):
+        if self.isInFront():
+            for i in range(self.num_of_vertices):
+                if abs(self.ndc_crds[i][0]) >= 1 or abs(self.ndc_crds[i][1]) >= 1:
+                    return False
+            return True
+        else:
+            return False
 
 
 class Object:
@@ -173,25 +156,25 @@ class Object:
                                 outline=poly['outline'], width=poly['width'])]
         self.center = [0]*4
 
-    def toWorld(self, matrix, *args, **kwargs):
+    def toWorld(self, matrix):
         for prim in self.prims:
-            prim.toWorld(matrix, *args, **kwargs)
+            prim.toWorld(matrix)
 
-    def toCamera(self, matrix, *args, **kwargs):
+    def toCamera(self, matrix):
         for prim in self.prims:
-            prim.toCamera(matrix, *args, **kwargs)
+            prim.toCamera(matrix)
 
-    def toProjection(self, matrix, *args, **kwargs):
+    def toProjection(self, matrix):
         for prim in self.prims:
-            prim.toProjection(matrix, *args, **kwargs)
+            prim.toProjection(matrix)
 
     def toNDC(self):
         for prim in self.prims:
             prim.toNDC()
 
-    def toScreen(self):
+    def toScreen(self, width, height):
         for prim in self.prims:
-            prim.toScreen()
+            prim.toScreen(width, height)
 
     def isInFront(self):
         for prim in self.prims:
