@@ -54,17 +54,17 @@ class Prim:
         return [p1[0]+(p2[0]-p1[0])*t, p1[1]+(p2[1]-p1[1])*t, -dz, 1]
 
     def _rear_clipping_algorithm(self, dz):
-        """ Clips polygons with plane z=0 and returns new polygon's matrix
+        """ Clips polygons with plane z+dz=0 (dz>0) and returns new polygon's matrix
 
         It checks every two points starting from the visible one. Depending on the sign
         of their z-coordinate a new point added or not to the new list of coordinates.
         Clipping points have z = -dx coordinate to project correctly.
-        Too big or too small values of dz can produce glitches. dz = 1 seems to be fine"""
+        Too big or too small values of dz can produce glitches. dz = 1 seems to be fine."""
         crds_list = []
         p_prev = None
 
         for i in range(self.c_crds.rows):
-            if self.c_crds[i][2] < 0:
+            if self.c_crds[i][2] < -dz:
                 try:
                     p_curr = [*self.c_crds[i+1]]
                     i_curr = i+1
@@ -80,9 +80,9 @@ class Prim:
 
         counter = 0
         while counter != self.c_crds.rows:
-            if p_curr[2] < 0:
+            if p_curr[2] < -dz:
                 curr = 1
-            elif p_curr[2] == 0:
+            elif p_curr[2] == dz:
                 curr = 0
             else:
                 curr = -1
