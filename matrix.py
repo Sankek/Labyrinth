@@ -116,6 +116,40 @@ class Matrix:
     def col(self, col):
         return self.transpose()[col]
 
+    def complement(self, x, y):       
+        n = self.rows
+        if n != self.cols:
+            print('Not inversible Matrix!')
+        dop = []
+        for i in range(n):
+            if i != x:
+                dop_str = []
+                for j in range(n):
+                    if j != y:
+                        dop_str.append(self[i][j])
+                dop.append(dop_str)
+        return Matrix(n-1, n-1, dop)
+    def det(self):      # finds determinant by recursion
+        n = self.rows
+        if n >= 2:
+            deter = 0
+            for i in range(n):
+                deter += ((-1)**i) * self[0][i] * (self.complement(0, i)).det()
+            
+        else:
+            deter =  self[0][0]
+        return deter
+
+    def inv(self):      # finds inverse matrix
+        n = self.rows
+        co_Matr = [[0]*n for i in range(n)] # empty matrix for inversion
+        det_M = self.det()
+        for i in range(n):
+            for j in range(n):
+                co_Matr[j][i] = ((-1)**(i+j))*(self.complement(i, j)).det() / det_M
+        return Matrix(n, n, co_Matr)
+
+
 
 def matr_E(n):
     new_matr = Matrix(n, n)
