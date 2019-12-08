@@ -22,14 +22,14 @@ canv.pack(fill=BOTH, expand=1)
 
 transform_1 = Matrix(4, 4, [
     [2, 0, 0, 0],
-    [0, 0, 2, 0],
+    [0, 0, -2, 0],
     [0, -2, 0, 0],
     [0, 25, -80, 1]
 ])
 
 transform_corner_start = Matrix(4, 4, [
     [2, 0, 0, 0],
-    [0, 0, 2, 0],
+    [0, 0, -2, 0],
     [0, -2, 0, 0],
     [0, 25, -400, 1]
 ])
@@ -198,6 +198,13 @@ a, w, s, d, q, e = False, False, False, False, False, False
 rot_up, rot_down, rot_left, rot_right = False, False, False, False
 angle = 0.0
 
+# lybyrinth.setObjPos(Obj, Matrix)
+# labyrinth.setCameraPos(Obj, Matrix)
+# labyrinth.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)  # for every obj: toCam, Sorting, to Proj, toNDC, toScr
+# canv.delete(ALL)
+# for prim in labirinth.prims:
+#     canv.create_polygon(*toCanv(prim), fill=prim.color)
+
 
 def bindings():
     global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right
@@ -346,6 +353,7 @@ prims_corner_list = [c1, c2, c3, c4, c5]
 
 def loop():
     global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, prims_list, angle
+    global c1, c2, c3, c4, c5
     # This will only work properly if the initial position of the camera was left the same!!!
     if w:
         pyramid.toWorld(transform_w(angle))
@@ -398,18 +406,32 @@ def loop():
 
     pyramid.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
     corner.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
-    canv.coords(p1, *toCanv(pyramid.prims[0]))
-    canv.coords(p2, *toCanv(pyramid.prims[1]))
-    canv.coords(p3, *toCanv(pyramid.prims[2]))
-    canv.coords(p4, *toCanv(pyramid.prims[3]))
-    canv.coords(p5, *toCanv(pyramid.prims[4]))
+    # canv.coords(p1, *toCanv(pyramid.prims[0]))
+    # canv.coords(p2, *toCanv(pyramid.prims[1]))
+    # canv.coords(p3, *toCanv(pyramid.prims[2]))
+    # canv.coords(p4, *toCanv(pyramid.prims[3]))
+    # canv.coords(p5, *toCanv(pyramid.prims[4]))
     # canv.coords(p6, *toCanv(pyramid.prims[5]))
 
-    canv.coords(c1, *toCanv(corner.prims[0]))
-    canv.coords(c2, *toCanv(corner.prims[1]))
-    canv.coords(c3, *toCanv(corner.prims[2]))
-    canv.coords(c4, *toCanv(corner.prims[3]))
-    canv.coords(c5, *toCanv(corner.prims[4]))
+    # canv.coords(c1, *toCanv(corner.prims[0]))
+    # canv.coords(c2, *toCanv(corner.prims[1]))
+    # canv.coords(c3, *toCanv(corner.prims[2]))
+    # canv.coords(c4, *toCanv(corner.prims[3]))
+    # canv.coords(c5, *toCanv(corner.prims[4]))
+
+    canv.delete(ALL)
+
+    p1 = canv.create_polygon(*toCanv(pyramid.prims[0]), outline='blue', width=2, fill='green')
+    p2 = canv.create_polygon(*toCanv(pyramid.prims[1]), outline='green', width=2)
+    p3 = canv.create_polygon(*toCanv(pyramid.prims[2]), outline='blue', width=2)
+    p4 = canv.create_polygon(*toCanv(pyramid.prims[3]), outline='green', width=2)
+    p5 = canv.create_polygon(*toCanv(pyramid.prims[4]), outline='blue', width=2, fill='red')
+
+    c1 = canv.create_polygon(*toCanv(corner.prims[0]), outline='blue', width=2)
+    c2 = canv.create_polygon(*toCanv(corner.prims[1]), outline='green', width=2, fill='yellow')
+    c3 = canv.create_polygon(*toCanv(corner.prims[2]), outline='blue', width=2)
+    c4 = canv.create_polygon(*toCanv(corner.prims[3]), outline='green', width=2)
+    c5 = canv.create_polygon(*toCanv(corner.prims[4]), outline='green', width=2)
 
     canv.update()
     root.after(20, loop)

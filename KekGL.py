@@ -44,7 +44,7 @@ class Prim:
 
     def toScreen(self, width, height):
         self.s_crds = Matrix(self.p_crds.rows, 2)
-        for i in range(self.p_crds.rows):
+        for i in range(self.ndc_crds.rows):
             self.s_crds.set_row(i, [width/2*(self.ndc_crds[i][0]+1), height/2*(self.ndc_crds[i][1]+1)])
 
     @staticmethod
@@ -82,7 +82,7 @@ class Prim:
         while counter != self.c_crds.rows:
             if p_curr[2] < -dz:
                 curr = 1
-            elif p_curr[2] == dz:
+            elif p_curr[2] == -dz:
                 curr = 0
             else:
                 curr = -1
@@ -196,7 +196,34 @@ class Player:
 
 class World:
     def __init__(self, player, *objects):
-        pass
+        self.objects = objects
+        self.player = player
+        self._BSP_root = None
+
+        # making a list of prims to sort them for drawing
+        self.prims = []
+
+        for obj in objects:
+            if isinstance(obj, Prim):
+                self.prims += [obj]
+            if isinstance(obj, Object):
+                self.prims += [obj.prims]
+
+    def BSP_create(self, root_prim=0):
+        self._BSP_root = _Node(self.prims[root_prim])
+        for prim in self.prims:
+            if prim is not self.prims[root_prim]:
+                self._BSP_root.insert(prim)
+
+    # def BSP_load(self, file):
+    #     self._BSP_root = ...
+
+    def update(self):
+        self.prims = self._BSP_root.get_prims()
+
+    def draw(self):
+        for i in self.prims:
+            i.draw()
 
 
 class Main:
@@ -205,3 +232,81 @@ class Main:
 
     def update(self):
         pass
+
+
+class _Node:
+    def __init__(self, prim):
+
+        self.behind = None
+        self.infront = None
+        self.prims = [prim]
+        self.equation = self.plane_equation(prim)
+
+    @staticmethod
+    def plane_equation(prim):  # TODO
+        x1 = prim.w_crds[0][0]
+        y1 = prim.w_crds[0][1]
+        z1 = prim.w_crds[0][2]
+        x2 = prim.w_crds[1][0]
+        y2 = prim.w_crds[1][1]
+        z2 = prim.w_crds[1][2]
+        x3 = prim.w_crds[2][0]
+        y3 = prim.w_crds[2][1]
+        z3 = prim.w_crds[2][2]
+        # ...
+        # Ax+By+Cz+D=0
+        return 'A', 'B', 'C', 'D'
+
+    def product(self, crd):
+        A, B, C, D = self.equation
+        return crd[0]*A+crd[1]*B+crd[2]*C+D
+
+    def clip(self, prim):  # TODO
+        clipped_prim_in_front = Prim(crds_1)
+        clipped_prim_behind = Prim(crds_2)
+        return clipped_prim_in_front, clipped_prim_behind
+
+    def insert(self, prim):
+        equation = self.plane_equation(prim)
+
+        if iswhollyinfront:  # TODO: for all crds: (crd,n)+D>=0
+            if self.infront is None:
+                self.infront = _Node(prim)
+            else:
+                self.infront.insert(prim)
+        elif iswhollybehind:  # TODO: for all crds: (crd,n)+D<=0
+            if self.behind is None:
+                self.behind = _Node(prim)
+            else:
+                self.behind.insert(prim)
+        elif isintersected:  # TODO: crds (crd,n)+D>0 and (crd,n)+D<0 are existing
+            clipped_prim_in_front, clipped_prim_behind = self.clip(prim)
+            if self.infront is None:
+                self.infront = _Node(clipped_prim_in_front)
+            else:
+                self.infront.insert(clipped_prim_in_front)
+            if self.behind is None:
+                self.behind = _Node(clipped_prim_behind)
+            else:
+                self.behind.insert(clipped_prim_behind)
+        else:  # for all crds: (crd,n)+D=0
+            self.prims += [prim]
+
+    def get_prims(self, view_crds):
+        prims = []
+        if self.infront is None and self.behind is None:
+            prims += [self.prims]
+        elif isinfront(view_crds, self.equation):  # TODO
+            prims += [self.behind.get_prims(view_crds)]
+            prims += [self.prims]
+            prims += [self.infront.get_prims(view_crds)]
+        elif isbehind(view_crds, self.equation):  # TODO
+            prims += [self.infront.get_prims(view_crds)]
+            prims += [self.prims]
+            prims += [self.behind.get_prims(view_crds)]
+        else:
+            prims += [self.infront.get_prims(view_crds)]
+            prims += [self.behind.get_prims(view_crds)]
+
+
+
