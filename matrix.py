@@ -119,7 +119,7 @@ class Matrix:
     def complement(self, x, y):       
         n = self.rows
         if n != self.cols:
-            print('Not inversible Matrix!')
+            raise TypeError('Not inversible Matrix!')
         dop = []
         for i in range(n):
             if i != x:
@@ -129,26 +129,27 @@ class Matrix:
                         dop_str.append(self[i][j])
                 dop.append(dop_str)
         return Matrix(n-1, n-1, dop)
-    def det(self):      # finds determinant by recursion
+
+    def det(self):  # finds determinant by recursion
         n = self.rows
         if n >= 2:
             deter = 0
             for i in range(n):
                 deter += ((-1)**i) * self[0][i] * (self.complement(0, i)).det()
-            
         else:
-            deter =  self[0][0]
+            deter = self[0][0]
         return deter
 
-    def inv(self):      # finds inverse matrix
+    def inverse(self):  # finds inverse matrix
         n = self.rows
-        co_Matr = [[0]*n for i in range(n)] # empty matrix for inversion
-        det_M = self.det()
+        co_matr = [[0]*n for i in range(n)]  # empty matrix for inversion
+        det_m = self.det()
+        if det_m == 0:
+            raise ZeroDivisionError('Not inversible matrix!')
         for i in range(n):
             for j in range(n):
-                co_Matr[j][i] = ((-1)**(i+j))*(self.complement(i, j)).det() / det_M
-        return Matrix(n, n, co_Matr)
-
+                co_matr[j][i] = ((-1)**(i+j))*(self.complement(i, j)).det() / det_m
+        return Matrix(n, n, co_matr)
 
 
 def matr_E(n):
