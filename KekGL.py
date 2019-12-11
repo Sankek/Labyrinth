@@ -280,6 +280,16 @@ class _Node:
                 return False
         return True
 
+    # finds intersection of line p1p2 with plane Ax+By+Cz+D=0
+    def intersec(self, p1, p2):
+        A, B, C, D = self.equation
+        t = -(D+p1[0]*A+p1[1]*B+p1[2]*C)/((p2[0]-p1[0])*A+(p2[1]-p1[1])*B+(p2[2]-p1[2])*C)
+        x = p1[0]+(p2[0]-p1[0])*t
+        y = p1[1]+(p2[1]-p1[1])*t
+        z = p1[2]+(p2[2]-p1[2])*t
+
+        return [x, y, z, 1]
+
     def clip(self, prim):  # TODO
         clipped_prim_in_front = Prim(crds_1)
         clipped_prim_behind = Prim(crds_2)
