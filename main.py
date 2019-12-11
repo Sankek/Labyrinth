@@ -238,22 +238,22 @@ def bindings():
         global e
         if not e:
             e = True
-            
+
     def move_rot_up(event):
         global rot_up
         if not rot_up:
             rot_up = True
-    
+
     def move_rot_down(event):
         global rot_down
         if not rot_down:
             rot_down = True
-            
+
     def move_rot_left(event):
         global rot_left
         if not rot_left:
             rot_left = True
-            
+
     def move_rot_right(event):
         global rot_right
         if not rot_right:
@@ -286,15 +286,15 @@ def bindings():
     def stop_rot_up(event):
         global rot_up
         rot_up = False
-        
+
     def stop_rot_down(event):
         global rot_down
         rot_down = False
-        
+
     def stop_rot_left(event):
         global rot_left
         rot_left = False
-        
+
     def stop_rot_right(event):
         global rot_right
         rot_right = False

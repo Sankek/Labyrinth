@@ -290,9 +290,138 @@ class _Node:
 
         return [x, y, z, 1]
 
-    def clip(self, prim):  # TODO
-        clipped_prim_in_front = Prim(crds_1)
-        clipped_prim_behind = Prim(crds_2)
+    def clip(self, prim):
+
+        crds_list1 = []
+        p_prev = None
+
+        for i in range(prim.w_crds.rows):
+            if self.product(prim.w_crds[i]) > 0:
+                try:
+                    p_curr = [*prim.w_crds[i][i+1]]
+                    i_curr = i+1
+                except IndexError:
+                    p_curr = [*prim.w_crds[0]]
+                    i_curr = 0
+                p_prev = [*prim.w_crds[i]]
+                prev = 1
+                break
+
+        counter = 0
+        while counter != prim.w_crds.rows:
+            if self.product(p_curr) > 0:
+                curr = 1
+            elif self.product(p_curr) == 0:
+                curr = 0
+            else:
+                curr = -1
+
+            while True:
+                if curr == -1 and prev == 1:
+                    crds_list1 += [self.intersec(p_curr, p_prev)]
+                    break
+                if curr == 0 and prev == 1:
+                    crds_list1 += [self.intersec(p_curr, p_prev)]
+                    break
+                if curr == 1 and prev == 1:
+                    crds_list1 += [p_curr]
+                    break
+                if curr == -1 and prev == -1:
+                    break
+                if curr == 0 and prev == -1:
+                    break
+                if curr == 1 and prev == -1:
+                    crds_list1 += [self.intersec(p_curr, p_prev)]
+                    crds_list1 += [p_curr]
+                    break
+                if curr == -1 and prev == 0:
+                    break
+                if curr == 0 and prev == 0:
+                    break
+                if curr == 1 and prev == 0:
+                    crds_list1 += [self.intersec(p_curr, p_prev)]
+                    crds_list1 += [p_curr]
+                    break
+
+            p_prev = p_curr
+            prev = curr
+            i_curr += 1
+            counter += 1
+            try:
+                p_curr = [*prim.w_crds[i_curr]]
+            except IndexError:
+                p_curr = [*prim.w_crds[0]]
+                i_curr = 0
+
+        crds_list2 = []
+        p_prev = None
+        p_curr = None
+        prev = None
+
+        for i in range(prim.w_crds.rows):
+            if self.product(prim.w_crds[i]) < 0:
+                try:
+                    p_curr = [*prim.w_crds[i][i+1]]
+                    i_curr = i+1
+                except IndexError:
+                    p_curr = [*prim.w_crds[0]]
+                    i_curr = 0
+                p_prev = [*prim.w_crds[i]]
+                prev = 1
+                break
+
+        counter = 0
+        while counter != prim.w_crds.rows:
+            if self.product(p_curr) < 0:
+                curr = 1
+            elif self.product(p_curr) == 0:
+                curr = 0
+            else:
+                curr = -1
+
+            while True:
+                if curr == -1 and prev == 1:
+                    crds_list2 += [self.intersec(p_curr, p_prev)]
+                    break
+                if curr == 0 and prev == 1:
+                    crds_list2 += [self.intersec(p_curr, p_prev)]
+                    break
+                if curr == 1 and prev == 1:
+                    crds_list2 += [p_curr]
+                    break
+                if curr == -1 and prev == -1:
+                    break
+                if curr == 0 and prev == -1:
+                    break
+                if curr == 1 and prev == -1:
+                    crds_list2 += [self.intersec(p_curr, p_prev)]
+                    crds_list2 += [p_curr]
+                    break
+                if curr == -1 and prev == 0:
+                    break
+                if curr == 0 and prev == 0:
+                    break
+                if curr == 1 and prev == 0:
+                    crds_list2 += [self.intersec(p_curr, p_prev)]
+                    crds_list2 += [p_curr]
+                    break
+
+            p_prev = p_curr
+            prev = curr
+            i_curr += 1
+            counter += 1
+            try:
+                p_curr = [*prim.w_crds[i_curr]]
+            except IndexError:
+                p_curr = [*prim.w_crds[0]]
+                i_curr = 0
+
+        clipped_prim_in_front = Prim((), color=prim.color, width=prim.width, outline=prim.outline)
+        clipped_prim_in_front.w_crds = Matrix(len(crds_list1), 4, crds_list1)
+
+        clipped_prim_behind = Prim((), color=prim.color, width=prim.width, outline=prim.outline)
+        clipped_prim_behind.w_crds = Matrix(len(crds_list2), 4, crds_list2)
+
         return clipped_prim_in_front, clipped_prim_behind
 
     def insert(self, prim):
