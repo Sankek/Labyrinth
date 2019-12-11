@@ -243,19 +243,17 @@ class _Node:
         self.equation = self.plane_equation(prim)
 
     @staticmethod
-    def plane_equation(prim):  # TODO
-        x1 = prim.w_crds[0][0]
-        y1 = prim.w_crds[0][1]
-        z1 = prim.w_crds[0][2]
-        x2 = prim.w_crds[1][0]
-        y2 = prim.w_crds[1][1]
-        z2 = prim.w_crds[1][2]
-        x3 = prim.w_crds[2][0]
-        y3 = prim.w_crds[2][1]
-        z3 = prim.w_crds[2][2]
-        # ...
+    def plane_equation(prim):
+        x1, y1, z1 = prim.w_crds[0][0], prim.w_crds[0][1], prim.w_crds[0][2]
+        x2, y2, z2 = prim.w_crds[1][0], prim.w_crds[1][1], prim.w_crds[1][2]
+        x3, y3, z3 = prim.w_crds[2][0], prim.w_crds[2][1], prim.w_crds[2][2]
+
+        A = (y2-y1)*(z3-z1)-(y3-y1)*(z2-z1)
+        B = (x3-x1)*(z2-z1)-(x2-x1)*(z3-z1)
+        C = (x2-x1)*(y3-y1)-(x3-x1)*(y2-y1)
+        D = -A*x1-B*y1-C*z1
         # Ax+By+Cz+D=0
-        return 'A', 'B', 'C', 'D'
+        return A, B, C, D
 
     def product(self, crd):
         A, B, C, D = self.equation
