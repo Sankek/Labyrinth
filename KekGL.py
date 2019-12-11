@@ -195,35 +195,46 @@ class Player:
 
 
 class World:
-    def __init__(self, player, *objects):
-        self.objects = objects
+    def __init__(self, player, *objects_static):
+        self.objects = objects_static
         self.player = player
         self._BSP_root = None
+        self.screen_width = 800
+        self.screen_height = 600
+        self.camera_matrix = matr_E(4)
 
         # making a list of prims to sort them for drawing
-        self.prims = []
+        self.prims_static = []
 
-        for obj in objects:
+        for obj in objects_static:
             if isinstance(obj, Prim):
-                self.prims += [obj]
+                self.prims_static += [obj]
             if isinstance(obj, Object):
-                self.prims += [obj.prims]
+                self.prims_static += [obj.prims]
 
     def BSP_create(self, root_prim=0):
-        self._BSP_root = _Node(self.prims[root_prim])
-        for prim in self.prims:
-            if prim is not self.prims[root_prim]:
+        self._BSP_root = _Node(self.prims_static[root_prim])
+        for prim in self.prims_static:
+            if prim is not self.prims_static[root_prim]:
                 self._BSP_root.insert(prim)
 
     # def BSP_load(self, file):
     #     self._BSP_root = ...
 
     def update(self):
-        self.prims = self._BSP_root.get_prims()
+        self.prims_static = self._BSP_root.get_prims()
+        for prim in self.prims_static:
+            prim.toCamera(self.camera_matrix)
+            prim.toProjection()
+            prim.toNDC()
+            prim.toScreen(self.screen_width, self.screen_height)
+
+    def canv_draw(self, prim):
+        pass
 
     def draw(self):
-        for i in self.prims:
-            i.draw()
+        for prim in self.prims_static:
+            self.canv_draw(prim)
 
 
 class Main:
