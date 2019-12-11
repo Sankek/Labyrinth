@@ -201,6 +201,7 @@ class World:
         self._BSP_root = None
         self.screen_width = 800
         self.screen_height = 600
+        self.projection_matrix = None
         self.camera_matrix = matr_E(4)
 
         # making a list of prims to sort them for drawing
@@ -210,7 +211,7 @@ class World:
             if isinstance(obj, Prim):
                 self.prims_static += [obj]
             if isinstance(obj, Object):
-                self.prims_static += [obj.prims]
+                self.prims_static += [*obj.prims]
 
     def BSP_create(self, root_prim=0):
         self._BSP_root = _Node(self.prims_static[root_prim])
@@ -222,10 +223,11 @@ class World:
     #     self._BSP_root = ...
 
     def update(self):
-        self.prims_static = self._BSP_root.get_prims()
+        self.prims_static = self._BSP_root.get_prims((self.camera_matrix[3][0],
+                                                     self.camera_matrix[3][1], self.camera_matrix[3][2]))
         for prim in self.prims_static:
             prim.toCamera(self.camera_matrix)
-            prim.toProjection()
+            prim.toProjection(self.projection_matrix)
             prim.toNDC()
             prim.toScreen(self.screen_width, self.screen_height)
 
@@ -309,7 +311,7 @@ class _Node:
         for i in range(prim.w_crds.rows):
             if self.product(prim.w_crds[i]) > 0:
                 try:
-                    p_curr = [*prim.w_crds[i][i+1]]
+                    p_curr = [*prim.w_crds[i+1]]
                     i_curr = i+1
                 except IndexError:
                     p_curr = [*prim.w_crds[0]]
@@ -372,7 +374,7 @@ class _Node:
         for i in range(prim.w_crds.rows):
             if self.product(prim.w_crds[i]) < 0:
                 try:
-                    p_curr = [*prim.w_crds[i][i+1]]
+                    p_curr = [*prim.w_crds[i+1]]
                     i_curr = i+1
                 except IndexError:
                     p_curr = [*prim.w_crds[0]]
@@ -436,8 +438,6 @@ class _Node:
         return clipped_prim_in_front, clipped_prim_behind
 
     def insert(self, prim):
-        equation = self.plane_equation(prim)
-
         if self.isBelonging(prim):
             self.prims += [prim]
         elif self.isInFront(prim):
@@ -464,19 +464,26 @@ class _Node:
     def get_prims(self, view_crds):
         prims = []
         if self.infront is None and self.behind is None:
-            prims += [self.prims]
+            prims += self.prims
 
-        elif self.product(view_crds):
-            prims += [self.behind.get_prims(view_crds)]
-            prims += [self.prims]
-            prims += [self.infront.get_prims(view_crds)]
-        elif self.product(view_crds):
-            prims += [self.infront.get_prims(view_crds)]
-            prims += [self.prims]
-            prims += [self.behind.get_prims(view_crds)]
+        elif self.product(view_crds) > 0:
+            if self.behind:
+                prims += self.behind.get_prims(view_crds)
+            prims += self.prims
+            if self.infront:
+                prims += self.infront.get_prims(view_crds)
+        elif self.product(view_crds) < 0:
+            if self.infront:
+                prims += self.infront.get_prims(view_crds)
+            prims += self.prims
+            if self.behind:
+                prims += self.behind.get_prims(view_crds)
         else:
-            prims += [self.infront.get_prims(view_crds)]
-            prims += [self.behind.get_prims(view_crds)]
+            if self.infront:
+                prims += self.infront.get_prims(view_crds)
+            if self.behind:
+                prims += self.behind.get_prims(view_crds)
+        return prims
 
 
 

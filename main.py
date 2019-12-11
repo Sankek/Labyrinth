@@ -19,12 +19,11 @@ root.resizable(False, False)
 canv = Canvas(root, bg='white')
 canv.pack(fill=BOTH, expand=1)
 
-
 transform_1 = Matrix(4, 4, [
     [2, 0, 0, 0],
     [0, 0, -2, 0],
     [0, -2, 0, 0],
-    [0, 25, -80, 1]
+    [20, 25, -70, 1]
 ])
 
 transform_corner_start = Matrix(4, 4, [
@@ -332,10 +331,14 @@ def toCanv(prim):
 
 
 pyramid = Object(pyramid_model)
+pyramid.toWorld(transform_1)
 corner = Object(corner_model)
-Labirinth = World(pyramid, corner)
-Labirinth.canv_draw = lambda prim: canv.create_polygon(*toCanv(prim.s_crds),
+corner.toWorld(transform_corner_start)
+player = Player()
+Labirinth = World(player, pyramid, corner)
+Labirinth.canv_draw = lambda prim: canv.create_polygon(*toCanv(prim),
                                                        outline=prim.outline, width=prim.width, fill=prim.color)
+Labirinth.projection_matrix = proj_matrix
 Labirinth.BSP_create()
 Labirinth.update()
 Labirinth.draw()
