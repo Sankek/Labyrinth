@@ -259,6 +259,27 @@ class _Node:
         A, B, C, D = self.equation
         return crd[0]*A+crd[1]*B+crd[2]*C+D
 
+    def isInFront(self, prim):
+        for crd in prim.w_crds:
+            if self.product(crd) < 0:
+                return False
+        return True
+
+    def isBehind(self, prim):
+        for crd in prim.w_crds:
+            if self.product(crd) > 0:
+                return False
+        return True
+
+    def isIntersected(self, prim):
+        return not (self.isInFront(prim) or self.isBehind(prim) or self.isBelonging(prim))
+
+    def isBelonging(self, prim):
+        for crd in prim.w_crds:
+            if self.product(crd) != 0:
+                return False
+        return True
+
     def clip(self, prim):  # TODO
         clipped_prim_in_front = Prim(crds_1)
         clipped_prim_behind = Prim(crds_2)
@@ -267,17 +288,19 @@ class _Node:
     def insert(self, prim):
         equation = self.plane_equation(prim)
 
-        if iswhollyinfront:  # TODO: for all crds: (crd,n)+D>=0
+        if self.isBelonging(prim):
+            self.prims += [prim]
+        elif self.isInFront(prim):
             if self.infront is None:
                 self.infront = _Node(prim)
             else:
                 self.infront.insert(prim)
-        elif iswhollybehind:  # TODO: for all crds: (crd,n)+D<=0
+        elif self.isBehind(prim):
             if self.behind is None:
                 self.behind = _Node(prim)
             else:
                 self.behind.insert(prim)
-        elif isintersected:  # TODO: crds (crd,n)+D>0 and (crd,n)+D<0 are existing
+        elif self.isIntersected(prim):
             clipped_prim_in_front, clipped_prim_behind = self.clip(prim)
             if self.infront is None:
                 self.infront = _Node(clipped_prim_in_front)
@@ -287,18 +310,17 @@ class _Node:
                 self.behind = _Node(clipped_prim_behind)
             else:
                 self.behind.insert(clipped_prim_behind)
-        else:  # for all crds: (crd,n)+D=0
-            self.prims += [prim]
 
     def get_prims(self, view_crds):
         prims = []
         if self.infront is None and self.behind is None:
             prims += [self.prims]
-        elif isinfront(view_crds, self.equation):  # TODO
+
+        elif self.product(view_crds):
             prims += [self.behind.get_prims(view_crds)]
             prims += [self.prims]
             prims += [self.infront.get_prims(view_crds)]
-        elif isbehind(view_crds, self.equation):  # TODO
+        elif self.product(view_crds):
             prims += [self.infront.get_prims(view_crds)]
             prims += [self.prims]
             prims += [self.behind.get_prims(view_crds)]
