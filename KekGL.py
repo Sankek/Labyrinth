@@ -203,17 +203,17 @@ class World:
         self.screen_height = 600
         self.projection_matrix = None
         self.camera_matrix = matr_E(4)
+        self.prims_static = None
 
+    def BSP_create(self, root_prim=0):
         # making a list of prims to sort them for drawing
         self.prims_static = []
-
-        for obj in objects_static:
+        for obj in self.objects:
             if isinstance(obj, Prim):
                 self.prims_static += [obj]
             if isinstance(obj, Object):
                 self.prims_static += [*obj.prims]
 
-    def BSP_create(self, root_prim=0):
         self._BSP_root = _Node(self.prims_static[root_prim])
         for prim in self.prims_static:
             if prim is not self.prims_static[root_prim]:
@@ -253,10 +253,10 @@ class _Node:
         self.behind = None
         self.infront = None
         self.prims = [prim]
-        self.equation = self.plane_equation(prim)
+        self.equation = self.plane_equation()
 
-    @staticmethod
-    def plane_equation(prim):
+    def plane_equation(self):
+        prim = self.prims[0]
         x1, y1, z1 = prim.w_crds[0][0], prim.w_crds[0][1], prim.w_crds[0][2]
         x2, y2, z2 = prim.w_crds[1][0], prim.w_crds[1][1], prim.w_crds[1][2]
         x3, y3, z3 = prim.w_crds[2][0], prim.w_crds[2][1], prim.w_crds[2][2]
@@ -274,13 +274,13 @@ class _Node:
 
     def isInFront(self, prim):
         for crd in prim.w_crds:
-            if self.product(crd) < 0:
+            if self.product(crd) < -10**(-8):  # handling the floating point error
                 return False
         return True
 
     def isBehind(self, prim):
         for crd in prim.w_crds:
-            if self.product(crd) > 0:
+            if self.product(crd) > 10**(-8):  # handling the floating point error
                 return False
         return True
 
@@ -289,7 +289,7 @@ class _Node:
 
     def isBelonging(self, prim):
         for crd in prim.w_crds:
-            if self.product(crd) != 0:
+            if abs(self.product(crd)) > 10**(-8):  # handling the floating point error
                 return False
         return True
 

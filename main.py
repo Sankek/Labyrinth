@@ -3,7 +3,6 @@ This is a basic example of using KekGL
 Use 'a', 'w', 's', 'd' to move, arrows to rotate
 """
 
-
 from tkinter import *
 from KekGL import *
 from models import pyramid_model, corner_model
@@ -168,7 +167,6 @@ transform_rot_z2 = Matrix(4, 4, [
     [0,       0,      0, 1]
 ])
 
-
 # coordinates of the view pyramid's vertices
 l, t, r, b = -40, 30, 40, -30
 n, f = 20, 100
@@ -180,29 +178,9 @@ proj_matrix = Matrix(4, 4, [
     [0,           0,           -2*f*n/(f-n),  0]
 ])
 
-# pyramid = Object(pyramid_model)
-# pyramid.toWorld(transform_1)
-# pyramid.toCamera(matr_E(4))
-# pyramid.toProjection(proj_matrix)
-# pyramid.toNDC()
-# pyramid.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
-# corner = Object(corner_model)
-# corner.toWorld(transform_corner_start)
-# corner.toCamera(matr_E(4))
-# corner.toProjection(proj_matrix)
-# corner.toNDC()
-# corner.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
-
 a, w, s, d, q, e = False, False, False, False, False, False
 rot_up, rot_down, rot_left, rot_right = False, False, False, False
 angle = 0.0
-
-# lybyrinth.setObjPos(Obj, Matrix)
-# labyrinth.setCameraPos(Obj, Matrix)
-# labyrinth.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)  # for every obj: toCam, Sorting, to Proj, toNDC, toScr
-# canv.delete(ALL)
-# for prim in labirinth.prims:
-#     canv.create_polygon(*toCanv(prim), fill=prim.color)
 
 
 def bindings():
@@ -332,122 +310,76 @@ def toCanv(prim):
 
 pyramid = Object(pyramid_model)
 pyramid.toWorld(transform_1)
+
 corner = Object(corner_model)
 corner.toWorld(transform_corner_start)
+
 player = Player()
-Labirinth = World(player, pyramid, corner)
-Labirinth.canv_draw = lambda prim: canv.create_polygon(*toCanv(prim),
-                                                       outline=prim.outline, width=prim.width, fill=prim.color)
+Labirinth = World(player, corner, pyramid)
+Labirinth.canv_draw = lambda prim: \
+    canv.create_polygon(*toCanv(prim), outline=prim.outline, width=prim.width, fill=prim.color)
 Labirinth.projection_matrix = proj_matrix
+
 Labirinth.BSP_create()
 Labirinth.update()
 Labirinth.draw()
 
-# p1 = canv.create_polygon(*toCanv(pyramid.prims[0]), outline='blue', width=2, fill='green')
-# p2 = canv.create_polygon(*toCanv(pyramid.prims[1]), outline='green', width=2)
-# p3 = canv.create_polygon(*toCanv(pyramid.prims[2]), outline='blue', width=2)
-# p4 = canv.create_polygon(*toCanv(pyramid.prims[3]), outline='green', width=2)
-# p5 = canv.create_polygon(*toCanv(pyramid.prims[4]), outline='blue', width=2, fill='red')
-#
-# c1 = canv.create_polygon(*toCanv(corner.prims[0]), outline='blue', width=2)
-# c2 = canv.create_polygon(*toCanv(corner.prims[1]), outline='green', width=2, fill='yellow')
-# c3 = canv.create_polygon(*toCanv(corner.prims[2]), outline='blue', width=2)
-# c4 = canv.create_polygon(*toCanv(corner.prims[3]), outline='green', width=2)
-# c5 = canv.create_polygon(*toCanv(corner.prims[4]), outline='green', width=2)
 
-# prims_list = [p1, p2, p3, p4, p5]
-# prims_corner_list = [c1, c2, c3, c4, c5]
+def loop():
+    global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, prims_list, angle
+    if w:
+        pyramid.toWorld(transform_w(angle))
+        corner.toWorld(transform_w(angle))
 
-# p6 = canv.create_polygon(*pyramid.prims[5].s_crds[0], *pyramid.prims[5].s_crds[1],
-#                     *pyramid.prims[5].s_crds[2], *pyramid.prims[5].s_crds[3], outline='green', width=2)
+    if a:
+        pyramid.toWorld(transform_a)
+        corner.toWorld(transform_a)
 
+    if s:
+        pyramid.toWorld(transform_s(angle))
+        corner.toWorld(transform_s(angle))
 
-# def loop():
-#     global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, prims_list, angle
-#     global c1, c2, c3, c4, c5
-#     # This will only work properly if the initial position of the camera was left the same!!!
-#     if w:
-#         pyramid.toWorld(transform_w(angle))
-#         corner.toWorld(transform_w(angle))
-#
-#     if a:
-#         pyramid.toWorld(transform_a)
-#         corner.toWorld(transform_a)
-#
-#     if s:
-#         pyramid.toWorld(transform_s(angle))
-#         corner.toWorld(transform_s(angle))
-#
-#     if d:
-#         pyramid.toWorld(transform_d)
-#         corner.toWorld(transform_d)
-#
-#     if q:
-#         pyramid.toWorld(transform_q)
-#         corner.toWorld(transform_q)
-#
-#     if e:
-#         pyramid.toWorld(transform_e)
-#         corner.toWorld(transform_e)
-#
-#     if rot_up and angle <= 1.5:
-#         angle += 0.1
-#         pyramid.toWorld(transform_rot_up)
-#         corner.toWorld(transform_rot_up)
-#
-#     if rot_left:
-#         pyramid.toWorld(tr_rot_left(angle))
-#         corner.toWorld(tr_rot_left(angle))
-#
-#     if rot_down and angle >= -1.5:
-#         angle -= 0.1
-#         pyramid.toWorld(transform_rot_down)
-#         corner.toWorld(transform_rot_down)
-#
-#     if rot_right:
-#         pyramid.toWorld(tr_rot_right(angle))
-#         corner.toWorld(tr_rot_right(angle))
-#
-#     # pyramid.toCamera(matr_E(4))
-#     # pyramid.toProjection(proj_matrix)
-#     # pyramid.toNDC()
-#     # corner.toCamera(matr_E(4))
-#     # corner.toProjection(proj_matrix)
-#     # corner.toNDC()
-#
-#     # pyramid.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
-#     # corner.toScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
-#     # canv.coords(p1, *toCanv(pyramid.prims[0]))
-#     # canv.coords(p2, *toCanv(pyramid.prims[1]))
-#     # canv.coords(p3, *toCanv(pyramid.prims[2]))
-#     # canv.coords(p4, *toCanv(pyramid.prims[3]))
-#     # canv.coords(p5, *toCanv(pyramid.prims[4]))
-#     # canv.coords(p6, *toCanv(pyramid.prims[5]))
-#
-#     # canv.coords(c1, *toCanv(corner.prims[0]))
-#     # canv.coords(c2, *toCanv(corner.prims[1]))
-#     # canv.coords(c3, *toCanv(corner.prims[2]))
-#     # canv.coords(c4, *toCanv(corner.prims[3]))
-#     # canv.coords(c5, *toCanv(corner.prims[4]))
-#
-#     canv.delete(ALL)
-#
-#     # p1 = canv.create_polygon(*toCanv(pyramid.prims[0]), outline='blue', width=2, fill='green')
-#     # p2 = canv.create_polygon(*toCanv(pyramid.prims[1]), outline='green', width=2)
-#     # p3 = canv.create_polygon(*toCanv(pyramid.prims[2]), outline='blue', width=2)
-#     # p4 = canv.create_polygon(*toCanv(pyramid.prims[3]), outline='green', width=2)
-#     # p5 = canv.create_polygon(*toCanv(pyramid.prims[4]), outline='blue', width=2, fill='red')
-#     #
-#     # c1 = canv.create_polygon(*toCanv(corner.prims[0]), outline='blue', width=2)
-#     # c2 = canv.create_polygon(*toCanv(corner.prims[1]), outline='green', width=2, fill='yellow')
-#     # c3 = canv.create_polygon(*toCanv(corner.prims[2]), outline='blue', width=2)
-#     # c4 = canv.create_polygon(*toCanv(corner.prims[3]), outline='green', width=2)
-#     # c5 = canv.create_polygon(*toCanv(corner.prims[4]), outline='green', width=2)
-#
-#     canv.update()
-#     root.after(20, loop)
+    if d:
+        pyramid.toWorld(transform_d)
+        corner.toWorld(transform_d)
+
+    if q:
+        pyramid.toWorld(transform_q)
+        corner.toWorld(transform_q)
+
+    if e:
+        pyramid.toWorld(transform_e)
+        corner.toWorld(transform_e)
+
+    if rot_up and angle <= 1.5:
+        angle += 0.1
+        pyramid.toWorld(transform_rot_up)
+        corner.toWorld(transform_rot_up)
+
+    if rot_left:
+        pyramid.toWorld(tr_rot_left(angle))
+        corner.toWorld(tr_rot_left(angle))
+
+    if rot_down and angle >= -1.5:
+        angle -= 0.1
+        pyramid.toWorld(transform_rot_down)
+        corner.toWorld(transform_rot_down)
+
+    if rot_right:
+        pyramid.toWorld(tr_rot_right(angle))
+        corner.toWorld(tr_rot_right(angle))
+
+    canv.delete(ALL)
+
+    Labirinth.BSP_create(0)
+
+    Labirinth.update()
+    Labirinth.draw()
+
+    canv.update()
+    root.after(20, loop)
 
 
-# loop()
+loop()
 
 mainloop()
