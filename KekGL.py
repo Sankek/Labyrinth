@@ -5,6 +5,7 @@ Note that in KekGl row-major matrix order is used.
 """
 
 from matrix import *
+from math import cos, sin
 
 
 class Prim:
@@ -34,7 +35,7 @@ class Prim:
 
     # Getting projected coordinates using projection matrix
     def toProjection(self, matrix):
-        self.p_crds = self._rear_clipping_algorithm(1)*matrix
+        self.p_crds = self._rear_clipping_algorithm(2)*matrix
 
     # NDC is normalized device coordinates
     def toNDC(self):
@@ -191,7 +192,28 @@ class Object:
 
 
 class Player:
-    pass
+    def __init__(self):
+        self.matrix = matr_E(4)
+
+    def move(self, matrix):
+        r = self.matrix[3]
+        self.matrix = matrix*self.matrix
+        self.matrix[3] = r
+
+    def move_along_z(self, r, phi):
+        self.matrix[3][0] += (self.matrix[1][0]*sin(phi) - self.matrix[2][0]*cos(phi))*r
+        self.matrix[3][1] += (self.matrix[1][1]*sin(phi) - self.matrix[2][1]*cos(phi))*r
+        self.matrix[3][2] += (self.matrix[1][2]*sin(phi) - self.matrix[2][2]*cos(phi))*r
+
+    def move_along_x(self, r):
+        self.matrix[3][0] += self.matrix[0][0]*r
+        self.matrix[3][1] += self.matrix[0][1]*r
+        self.matrix[3][2] += self.matrix[0][2]*r
+
+    def move_along_y(self, r):
+        self.matrix[3][0] += self.matrix[1][0]*r
+        self.matrix[3][1] += self.matrix[1][1]*r
+        self.matrix[3][2] += self.matrix[1][2]*r
 
 
 class World:
@@ -225,8 +247,12 @@ class World:
     def update(self):
         self.prims_static = self._BSP_root.get_prims((self.camera_matrix[3][0],
                                                      self.camera_matrix[3][1], self.camera_matrix[3][2]))
+
+        self.camera_matrix = self.player.matrix
+        camera_matrix = self.camera_matrix.inverse()
+
         for prim in self.prims_static:
-            prim.toCamera(self.camera_matrix)
+            prim.toCamera(camera_matrix)
             prim.toProjection(self.projection_matrix)
             prim.toNDC()
             prim.toScreen(self.screen_width, self.screen_height)

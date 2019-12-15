@@ -78,15 +78,15 @@ ang = 0.1
 
 transform_rot_up = Matrix(4, 4, [
     [1, 0,       0,      0],
-    [0, cos(ang),  sin(ang), 0],
-    [0, -sin(ang), cos(ang), 0],
+    [0, cos(-ang),  sin(-ang), 0],
+    [0, -sin(-ang), cos(-ang), 0],
     [0, 0,       0,      1]
 ])
 
 transform_rot_down = Matrix(4, 4, [
     [1, 0,        0,       0],
-    [0, cos(-ang),  sin(-ang), 0],
-    [0, -sin(-ang), cos(-ang), 0],
+    [0, cos(ang),  sin(ang), 0],
+    [0, -sin(ang), cos(ang), 0],
     [0, 0,        0,       1]
 ])
 
@@ -113,20 +113,6 @@ def transform_s(phi):
 # these two matrices rotate camera relative to the world vertical axis
 def tr_rot_right(phi):
     global ang
-    c = cos(ang)
-    s = sin(ang)
-    anc = cos(phi)
-    ans = sin(phi)
-    return Matrix(4, 4, [
-        [c,      s*ans,          -s*anc,         0],
-        [-s*ans, anc**2*(1-c)+c, anc*ans*(1-c),  0],
-        [s*anc,  anc*ans*(1-c),  ans**2*(1-c)+c, 0],
-        [0,      0,              0,              1]
-    ])
-
-
-def tr_rot_left(phi):
-    global ang
     c = cos(-ang)
     s = sin(-ang)
     anc = cos(phi)
@@ -139,17 +125,31 @@ def tr_rot_left(phi):
     ])
 
 
+def tr_rot_left(phi):
+    global ang
+    c = cos(ang)
+    s = sin(ang)
+    anc = cos(phi)
+    ans = sin(phi)
+    return Matrix(4, 4, [
+        [c,      s*ans,          -s*anc,         0],
+        [-s*ans, anc**2*(1-c)+c, anc*ans*(1-c),  0],
+        [s*anc,  anc*ans*(1-c),  ans**2*(1-c)+c, 0],
+        [0,      0,              0,              1]
+    ])
+
+
 transform_rot_left = Matrix(4, 4, [
-    [cos(-ang), 0, -sin(-ang), 0],
+    [cos(ang), 0, -sin(ang), 0],
     [0,       1, 0,        0],
-    [sin(-ang), 0, cos(-ang),  0],
+    [sin(ang), 0, cos(ang),  0],
     [0,       0, 0,        1]
 ])
 
 transform_rot_right = Matrix(4, 4, [
-    [cos(ang), 0, -sin(ang), 0],
+    [cos(-ang), 0, -sin(-ang), 0],
     [0,      1, 0,       0],
-    [sin(ang), 0, cos(ang),  0],
+    [sin(-ang), 0, cos(-ang),  0],
     [0,      0, 0,       1]
 ])
 
@@ -169,7 +169,7 @@ transform_rot_z2 = Matrix(4, 4, [
 
 # coordinates of the view pyramid's vertices
 l, t, r, b = -40, 30, 40, -30
-n, f = 20, 100
+n, f = 40, 100
 
 proj_matrix = Matrix(4, 4, [
     [2*n/(r-l),   0,           0,             0],
@@ -326,52 +326,40 @@ Labirinth.draw()
 
 
 def loop():
-    global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, prims_list, angle
+    global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, angle
     if w:
-        pyramid.toWorld(transform_w(angle))
-        corner.toWorld(transform_w(angle))
+        player.move_along_z(2, angle)
 
     if a:
-        pyramid.toWorld(transform_a)
-        corner.toWorld(transform_a)
+        player.move_along_x(-2)
 
     if s:
-        pyramid.toWorld(transform_s(angle))
-        corner.toWorld(transform_s(angle))
+        player.move_along_z(-2, angle)
 
     if d:
-        pyramid.toWorld(transform_d)
-        corner.toWorld(transform_d)
+        player.move_along_x(2)
 
     if q:
-        pyramid.toWorld(transform_q)
-        corner.toWorld(transform_q)
+        player.move_along_y(2)
 
     if e:
-        pyramid.toWorld(transform_e)
-        corner.toWorld(transform_e)
+        player.move_along_y(-2)
 
     if rot_up and angle <= 1.5:
         angle += 0.1
-        pyramid.toWorld(transform_rot_up)
-        corner.toWorld(transform_rot_up)
+        player.move(transform_rot_up)
 
     if rot_left:
-        pyramid.toWorld(tr_rot_left(angle))
-        corner.toWorld(tr_rot_left(angle))
+        player.move(tr_rot_left(angle))
 
     if rot_down and angle >= -1.5:
         angle -= 0.1
-        pyramid.toWorld(transform_rot_down)
-        corner.toWorld(transform_rot_down)
+        player.move(transform_rot_down)
 
     if rot_right:
-        pyramid.toWorld(tr_rot_right(angle))
-        corner.toWorld(tr_rot_right(angle))
+        player.move(tr_rot_right(angle))
 
     canv.delete(ALL)
-
-    Labirinth.BSP_create(0)
 
     Labirinth.update()
     Labirinth.draw()
