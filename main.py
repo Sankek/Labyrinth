@@ -8,9 +8,10 @@ from tkinter import *
 from KekGL import *
 from models import pyramid_model, corner_model
 from math import cos, sin, pi
+from menu import *
+#from Image import*
 from time import time
 
-root = Tk()
 
 SCREEN_WIDTH = root.winfo_screenwidth()
 SCREEN_HEIGHT = root.winfo_screenheight()
@@ -19,8 +20,6 @@ root.attributes('-fullscreen', True)
 root.config(cursor="none")
 # root.geometry(str(SCREEN_WIDTH)+'x'+str(SCREEN_HEIGHT))
 # root.resizable(False, False)
-canv = Canvas(root, bg='white')
-canv.pack(fill=BOTH, expand=1)
 
 transform_1 = Matrix(4, 4, [
     [2, 0, 0, 0],
@@ -204,87 +203,120 @@ proj_matrix = Matrix(4, 4, [
     [0,           0,           -2*f*n/(f-n),  0]
 ])
 
-a, w, s, d, q, e = False, False, False, False, False, False
+a, w, s, d, q, e, esc, step = False, False, False, False, False, False, False, False
 rot_up, rot_down, rot_left, rot_right = False, False, False, False
 deviation_angle = 0.0
 previous_mouse_position = root.winfo_pointerx()-root.winfo_rootx(), root.winfo_pointery()-root.winfo_rooty()
-
+filename_3 = 'steps.mp3'
+clip_3 = mp3play.load(filename_3)
 
 def bindings():
     global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right
+    global clip_2, filename_2, esc
 
     def move_w(event):
-        global w
+        global w, clip_3, filename_3, step
+        if not step:
+            clip_3.play()
+            step = True
         if not w:
             w = True
 
+
     def move_s(event):
-        global s
+        global s, clip_3, filename_3, step
+        if not step:
+            clip_3.play()
+            step = True
         if not s:
             s = True
 
     def move_a(event):
-        global a
+        global a, clip_3, filename_3, step
+        if not step:
+            clip_3.play()
+            step = True
         if not a:
             a = True
 
     def move_d(event):
-        global d
+        global d, clip_3, filename_3, step
+        if not step:
+            clip_3.play()
+            step = True
         if not d:
             d = True
 
     def move_q(event):
-        global q
+        global q, clip_3, filename_3, step
+        if not step:
+            clip_3.play()
+            step = True
         if not q:
             q = True
 
     def move_e(event):
-        global e
+        global e, clip_3, filename_3, step
+        if not step:
+            clip_3.play()
+            step = True
         if not e:
             e = True
 
     def move_rot_up(event):
-        global rot_up
+        global rot_up, clip_3, filename_3, step
         if not rot_up:
             rot_up = True
 
     def move_rot_down(event):
-        global rot_down
+        global rot_down, clip_3, filename_3, step
         if not rot_down:
             rot_down = True
 
     def move_rot_left(event):
-        global rot_left
+        global rot_left, clip_3, filename_3, step
         if not rot_left:
             rot_left = True
 
     def move_rot_right(event):
-        global rot_right
+        global rot_right, clip_3, filename_3, step
         if not rot_right:
             rot_right = True
 
     def stop_w(event):
-        global w
+        global w, clip_3, step
+        clip_3.stop()
+        step = False
         w = False
 
     def stop_s(event):
-        global s
+        global s, clip_3, step
+        clip_3.stop()
+        step = False
         s = False
 
     def stop_a(event):
-        global a
+        global a, clip_3, step
+        clip_3.stop()
+        step = False
         a = False
 
     def stop_d(event):
-        global d
+        global d, clip_3, step
+        clip_3.stop()
+        step = False
         d = False
 
     def stop_q(event):
-        global q
+        global q, clip_3, step
+        clip_3.stop()
+        step = False
         q = False
 
     def stop_e(event):
-        global e
+        global e, clip_3, step
+        clip_3.stop()
+        step = False
         e = False
 
     def stop_rot_up(event):
@@ -302,6 +334,19 @@ def bindings():
     def stop_rot_right(event):
         global rot_right
         rot_right = False
+
+    def pushing_escape(event):
+        global esc
+        esc = True
+
+    def press_F_to_pay_respect(event):
+        global clip_2, filename_2
+        filename_2 = 'goagain.mp3'
+        clip_2 = mp3play.load(filename_2)
+        clip_2.play()
+
+
+
 
     root.bind('w', move_w)
     root.bind('s', move_s)
@@ -322,7 +367,9 @@ def bindings():
     root.bind('<KeyRelease-Up>', stop_rot_up)
     root.bind('<KeyRelease-Down>', stop_rot_down)
     root.bind('<KeyRelease-Left>', stop_rot_left)
-    root.bind('<KeyRelease-Right>', stop_rot_right) 
+    root.bind('<KeyRelease-Right>', stop_rot_right)
+    root.bind('<Escape>', pushing_escape)
+    root.bind('f', press_F_to_pay_respect)
 
 
 bindings()
@@ -341,16 +388,6 @@ pyramid.toWorld(transform_1)
 corner = Object(corner_model)
 corner.toWorld(transform_corner_start)
 
-# corlist = []
-# for i in range(10):
-#     corlist += [Object(corner_model)]
-#     corlist[i].toWorld(Matrix(4, 4, [
-#     [2, 0, 0, 0],
-#     [0, 0, -2, 0],
-#     [0, -2, 0, 0],
-#     [20, 25, -70+100*i, 1]
-# ]))
-
 player = Player()
 player.matrix = Matrix(4, 4, [[1,0,0,0],
 				[0,1,0,0],
@@ -365,7 +402,6 @@ Labirinth.set_screen_resolution(SCREEN_WIDTH, SCREEN_HEIGHT)
 Labirinth.BSP_create()
 Labirinth.update()
 Labirinth.draw()
-print(Labirinth.prims_static)
 
 fps = 0
 fps_time_start = 0
@@ -374,159 +410,189 @@ counter = 0
 
 def loop():
     global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, deviation_angle, previous_mouse_position
-    global fps, fps_time_start, counter
+    global fps, fps_time_start, counter, game_is_on, k, esc
     start_time = time()
 
-    allowed_directions = Labirinth.get_allowed_directions()     # get some restrictions to moving
-    #print(allowed_directions)
-    motion_x, motion_y = 0, 0
-    if root == root.focus_get():
-        x, y = root.winfo_pointerx()-root.winfo_rootx(), root.winfo_pointery()-root.winfo_rooty()
-        #print([x, y], previous_mouse_position)
-        motion_x, motion_y = x-previous_mouse_position[0], y-previous_mouse_position[1]
-        previous_mouse_position = SCREEN_WIDTH/2, SCREEN_HEIGHT/2
-        canv.event_generate('<Motion>', warp=True, x=SCREEN_WIDTH/2, y=SCREEN_HEIGHT/2)
-
-    if w:
-        if len(allowed_directions) == 0:
-            player.move_along_z(player.speed, deviation_angle)  # if there are no restrictions
-        else:
-            move = True
-            move_x = (player.matrix[1][0]*sin(deviation_angle) - player.matrix[2][0]*cos(deviation_angle))*player.speed     # coords of mooving
-            move_y = (player.matrix[1][1]*sin(deviation_angle) - player.matrix[2][1]*cos(deviation_angle))*player.speed
-            move_z = (player.matrix[1][2]*sin(deviation_angle) - player.matrix[2][2]*cos(deviation_angle))*player.speed
-
-            for direct in allowed_directions:
-                if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:      # give a permission to move if True by checking a direction of moving
-                    move = False
-            if move:
-                player.move_along_z(player.speed, deviation_angle)
 
 
+    if esc:
+        root.config(cursor="")
+        canv.destroy()
+        game_is_on = False
+        img = PhotoImage(file='бентли.gif')
+        image_menu = Label(image=img)
+        image_menu.place(x=0, y=0)
+        image_menu.image = img
+        Pause()
+        k = 0
 
-    if a:
-        if len(allowed_directions) == 0:
-            player.move_along_x(-player.speed)
-        else:
-            move = True
-            move_x = player.matrix[0][0]*(-player.speed)
-            move_y = player.matrix[0][1]*(-player.speed)
-            move_z = player.matrix[0][2]*(-player.speed)
-            
+        def ebat():
+            global k, game_is_on, esc
+            k += 1
+            image_menu.place(x=-10*k, y=0)
+            if k == 100:
+                k = 0
+                image_menu.place(x=0, y=0)
+            if game_is_on:
+                image_menu.destroy()
+                loop()
+            else:
+                root.after(10, ebat)
 
-            for direct in allowed_directions:
-                if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
-                    move = False
-            if move:
+        ebat()
+
+    if game_is_on:
+        allowed_directions = Labirinth.get_allowed_directions()  # get some restrictions to moving
+        # print(allowed_directions)
+        motion_x, motion_y = 0, 0
+
+        if root == root.focus_get():
+            x, y = root.winfo_pointerx()-root.winfo_rootx(), root.winfo_pointery()-root.winfo_rooty()
+            #print([x, y], previous_mouse_position)
+            motion_x, motion_y = x-previous_mouse_position[0], y-previous_mouse_position[1]
+            previous_mouse_position = SCREEN_WIDTH/2, SCREEN_HEIGHT/2
+            canv.event_generate('<Motion>', warp=True, x=SCREEN_WIDTH/2, y=SCREEN_HEIGHT/2)
+
+        if w:
+            if len(allowed_directions) == 0:
+                player.move_along_z(player.speed, deviation_angle)  # if there are no restrictions
+            else:
+                move = True
+                move_x = (player.matrix[1][0]*sin(deviation_angle) - player.matrix[2][0]*cos(deviation_angle))*player.speed     # coords of mooving
+                move_y = (player.matrix[1][1]*sin(deviation_angle) - player.matrix[2][1]*cos(deviation_angle))*player.speed
+                move_z = (player.matrix[1][2]*sin(deviation_angle) - player.matrix[2][2]*cos(deviation_angle))*player.speed
+
+                for direct in allowed_directions:
+                    if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:      # give a permission to move if True by checking a direction of moving
+                        move = False
+                if move:
+                    player.move_along_z(player.speed, deviation_angle)
+
+
+
+        if a:
+            if len(allowed_directions) == 0:
                 player.move_along_x(-player.speed)
+            else:
+                move = True
+                move_x = player.matrix[0][0]*(-player.speed)
+                move_y = player.matrix[0][1]*(-player.speed)
+                move_z = player.matrix[0][2]*(-player.speed)
 
 
-    if s:
-        if len(allowed_directions) == 0:
-            player.move_along_z(-player.speed, deviation_angle)
-        else:
-            move = True
-            move_x = (player.matrix[1][0]*sin(deviation_angle) - player.matrix[2][0]*cos(deviation_angle))*(-player.speed)
-            move_y = (player.matrix[1][1]*sin(deviation_angle) - player.matrix[2][1]*cos(deviation_angle))*(-player.speed)
-            move_z = (player.matrix[1][2]*sin(deviation_angle) - player.matrix[2][2]*cos(deviation_angle))*(-player.speed)
+                for direct in allowed_directions:
+                    if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
+                        move = False
+                if move:
+                    player.move_along_x(-player.speed)
 
-            for direct in allowed_directions:
-                if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
-                    move = False
-            if move:
+
+        if s:
+            if len(allowed_directions) == 0:
                 player.move_along_z(-player.speed, deviation_angle)
+            else:
+                move = True
+                move_x = (player.matrix[1][0]*sin(deviation_angle) - player.matrix[2][0]*cos(deviation_angle))*(-player.speed)
+                move_y = (player.matrix[1][1]*sin(deviation_angle) - player.matrix[2][1]*cos(deviation_angle))*(-player.speed)
+                move_z = (player.matrix[1][2]*sin(deviation_angle) - player.matrix[2][2]*cos(deviation_angle))*(-player.speed)
 
-    if d:
-        if len(allowed_directions) == 0:
-            player.move_along_x(player.speed)
-        else:
-            move = True
-            move_x = player.matrix[0][0]*(player.speed)
-            move_y = player.matrix[0][1]*(player.speed)
-            move_z = player.matrix[0][2]*(player.speed)
-            
+                for direct in allowed_directions:
+                    if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
+                        move = False
+                if move:
+                    player.move_along_z(-player.speed, deviation_angle)
 
-            for direct in allowed_directions:
-                if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
-                    move = False
-            if move:
+        if d:
+            if len(allowed_directions) == 0:
                 player.move_along_x(player.speed)
+            else:
+                move = True
+                move_x = player.matrix[0][0]*(player.speed)
+                move_y = player.matrix[0][1]*(player.speed)
+                move_z = player.matrix[0][2]*(player.speed)
 
-    if q:
-        if len(allowed_directions) == 0:
-            player.move_along_y(player.speed)
-        else:
-            move = True
-            move_x = player.matrix[1][0]*(player.speed)
-            move_y = player.matrix[1][1]*(player.speed)
-            move_z = player.matrix[1][2]*(player.speed)
-            
 
-            for direct in allowed_directions:
-                if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
-                    move = False
-            if move:
+                for direct in allowed_directions:
+                    if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
+                        move = False
+                if move:
+                    player.move_along_x(player.speed)
+
+        if q:
+            if len(allowed_directions) == 0:
                 player.move_along_y(player.speed)
+            else:
+                move = True
+                move_x = player.matrix[1][0]*(player.speed)
+                move_y = player.matrix[1][1]*(player.speed)
+                move_z = player.matrix[1][2]*(player.speed)
 
 
-    if e:
-        if len(allowed_directions) == 0:
-            player.move_along_y(-player.speed)
-        else:
-            move = True
-            move_x = player.matrix[1][0]*(-player.speed)
-            move_y = player.matrix[1][1]*(-player.speed)
-            move_z = player.matrix[1][2]*(-player.speed)
-            
+                for direct in allowed_directions:
+                    if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
+                        move = False
+                if move:
+                    player.move_along_y(player.speed)
 
-            for direct in allowed_directions:
-                if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
-                    move = False
-            if move:
+
+        if e:
+            if len(allowed_directions) == 0:
                 player.move_along_y(-player.speed)
+            else:
+                move = True
+                move_x = player.matrix[1][0]*(-player.speed)
+                move_y = player.matrix[1][1]*(-player.speed)
+                move_z = player.matrix[1][2]*(-player.speed)
 
-    if rot_up and deviation_angle <= 1.5:
-        deviation_angle += 0.04
-        player.move(transform_rot_up)
 
-    if rot_left:
-        player.move(tr_rot_left(deviation_angle))
+                for direct in allowed_directions:
+                    if direct[0]*move_x + direct[1]*move_y + direct[2]*move_z < 0:
+                        move = False
+                if move:
+                    player.move_along_y(-player.speed)
 
-    if rot_down and deviation_angle >= -1.5:
-        deviation_angle -= 0.04
-        player.move(transform_rot_down)
+        if rot_up and deviation_angle <= 1.5:
+            deviation_angle += 0.04
+            player.move(transform_rot_up)
 
-    if rot_right:
-        player.move(tr_rot_right(deviation_angle))
+        if rot_left:
+            player.move(tr_rot_left(deviation_angle))
 
-    if motion_x != 0:
-        player.move(transform_rot_x(motion_x/400, deviation_angle))
+        if rot_down and deviation_angle >= -1.5:
+            deviation_angle -= 0.04
+            player.move(transform_rot_down)
 
-    if motion_y > 0 and deviation_angle >= -1.5:
-        mot_y = motion_y
-        deviation_angle -= mot_y/400
-        player.move(transform_rot_y(mot_y/400))
+        if rot_right:
+            player.move(tr_rot_right(deviation_angle))
 
-    if motion_y < 0 and deviation_angle <= 1.5:
-        mot_y = motion_y
-        deviation_angle += -mot_y/400
-        player.move(transform_rot_y(mot_y/400))
+        if motion_x != 0:
+            player.move(transform_rot_x(motion_x/400, deviation_angle))
 
-    canv.delete(ALL)
+        if motion_y > 0 and deviation_angle >= -1.5:
+            mot_y = motion_y
+            deviation_angle -= mot_y/400
+            player.move(transform_rot_y(mot_y/400))
 
-    Labirinth.update()
-    Labirinth.draw()
+        if motion_y < 0 and deviation_angle <= 1.5:
+            mot_y = motion_y
+            deviation_angle += -mot_y/400
+            player.move(transform_rot_y(mot_y/400))
 
-    canv.create_text(300, 300, text='fps: ' + str(fps))
-    canv.create_text(300, 500, text='player_crds: ' + str(player.matrix[3]))
+        canv.delete(ALL)
 
-    canv.update()
+        Labirinth.update()
+        Labirinth.draw()
 
-    counter += 1
-    if counter == 10:
-        fps = 10/(time()-fps_time_start)
-        fps_time_start = time()
-        counter = 1
+        # canv.create_text(300, 300, text='fps: ' + str(fps))
+        # canv.create_text(300, 500, text='player_crds: ' + str(player.matrix[3]))
+
+        canv.update()
+
+        counter += 1
+        if counter == 10:
+            fps = 10/(time()-fps_time_start)
+            fps_time_start = time()
+            counter = 1
 
     dt = int((time()-start_time)*1000)
     canv.create_text(300, 400, text='dt: ' + str(dt))
@@ -534,7 +600,7 @@ def loop():
     if dt >= 34:
         root.after(0, loop)
     else:
-        root.after(34-dt, loop)
+        root.after(0, loop)
 
 
 loop()
