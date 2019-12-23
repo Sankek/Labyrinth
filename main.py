@@ -197,6 +197,7 @@ transform_rot_z2 = Matrix(4, 4, [
 l, t, r, b = -SCREEN_WIDTH/20, SCREEN_HEIGHT/20, SCREEN_WIDTH/20, -SCREEN_HEIGHT/20
 n, f = 70, 100
 
+
 proj_matrix = Matrix(4, 4, [
     [2*n/(r-l),   0,           0,             0],
     [0,           2*n/(t-b),   0,             0],
@@ -382,7 +383,6 @@ def loop():
         motion_x, motion_y = x-previous_mouse_position[0], y-previous_mouse_position[1]
         previous_mouse_position = SCREEN_WIDTH/2, SCREEN_HEIGHT/2
         canv.event_generate('<Motion>', warp=True, x=SCREEN_WIDTH/2, y=SCREEN_HEIGHT/2)
-
     if w:
         if len(allowed_directions) == 0:
             player.move_along_z(player.speed, deviation_angle)  # if there are no restrictions
@@ -530,7 +530,8 @@ def loop():
     if dt >= 34:
         root.after(0, loop)
     else:
-        root.after(0, loop)
+        root.after(34-dt, loop)
+
 
 
 loop()

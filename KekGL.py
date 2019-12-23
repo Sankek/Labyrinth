@@ -284,7 +284,7 @@ class World:
             C = (x2-x1)*(y3-y1)-(x3-x1)*(y2-y1)
             D = -A*x1-B*y1-C*z1
             
-            len_norm = abs((A**2 + B**2 + C**2))**0.                                # length of normal
+            len_norm = abs((A**2 + B**2 + C**2))**0.5                                # length of normal
             dist = abs((A*x0 + B*y0 + C*z0 + D))/(len_norm)                         # distance to the plane
             
 
