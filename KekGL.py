@@ -227,6 +227,10 @@ class World:
         self.camera_matrix = matr_E(4)
         self.prims_static = None
 
+    def set_screen_resolution(self, width, height):
+        self.screen_width = width
+        self.screen_height = height
+
     def BSP_create(self, root_prim=0):
         # making a list of prims to sort them for drawing
         self.prims_static = []

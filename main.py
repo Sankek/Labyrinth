@@ -7,14 +7,17 @@ from tkinter import *
 from KekGL import *
 from models import pyramid_model, corner_model
 from math import cos, sin, pi
-
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+from time import time
 
 root = Tk()
-fr = Frame(root)
-root.geometry(str(SCREEN_WIDTH)+'x'+str(SCREEN_HEIGHT))
-root.resizable(False, False)
+
+SCREEN_WIDTH = root.winfo_screenwidth()
+SCREEN_HEIGHT = root.winfo_screenheight()
+
+root.attributes('-fullscreen', True)
+root.config(cursor="none")
+# root.geometry(str(SCREEN_WIDTH)+'x'+str(SCREEN_HEIGHT))
+# root.resizable(False, False)
 canv = Canvas(root, bg='white')
 canv.pack(fill=BOTH, expand=1)
 
@@ -168,7 +171,7 @@ transform_rot_z2 = Matrix(4, 4, [
 ])
 
 # coordinates of the view pyramid's vertices
-l, t, r, b = -40, 30, 40, -30
+l, t, r, b = -SCREEN_WIDTH/20, SCREEN_HEIGHT/20, SCREEN_WIDTH/20, -SCREEN_HEIGHT/20
 n, f = 40, 100
 
 proj_matrix = Matrix(4, 4, [
@@ -319,6 +322,7 @@ Labirinth = World(player, corner, pyramid)
 Labirinth.canv_draw = lambda prim: \
     canv.create_polygon(*toCanv(prim), outline=prim.outline, width=prim.width, fill=prim.color)
 Labirinth.projection_matrix = proj_matrix
+Labirinth.set_screen_resolution(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 Labirinth.BSP_create()
 Labirinth.update()
@@ -327,6 +331,8 @@ Labirinth.draw()
 
 def loop():
     global a, w, s, d, q, e, rot_up, rot_down, rot_left, rot_right, angle
+    start_time = time()
+
     if w:
         player.move_along_z(2, angle)
 
@@ -365,7 +371,12 @@ def loop():
     Labirinth.draw()
 
     canv.update()
-    root.after(20, loop)
+
+    dt = int((time()-start_time)*1000)
+    if dt >= 28:
+        root.after(28, loop)
+    else:
+        root.after(28-dt, loop)
 
 
 loop()
