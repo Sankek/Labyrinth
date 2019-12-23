@@ -30,9 +30,9 @@ transform_1 = Matrix(4, 4, [
 ])
 
 transform_corner_start = Matrix(4, 4, [
-    [2, 0, 0, 0],
-    [0, 0, -2, 0],
-    [0, -2, 0, 0],
+    [0.25, 0, 0, 0],
+    [0, 0, -0.25, 0],
+    [0, -0.25, 0, 0],
     [0, 25, -400, 1]
 ])
 
@@ -197,7 +197,6 @@ transform_rot_z2 = Matrix(4, 4, [
 l, t, r, b = -SCREEN_WIDTH/20, SCREEN_HEIGHT/20, SCREEN_WIDTH/20, -SCREEN_HEIGHT/20
 n, f = 70, 100
 
-
 proj_matrix = Matrix(4, 4, [
     [2*n/(r-l),   0,           0,             0],
     [0,           2*n/(t-b),   0,             0],
@@ -342,18 +341,22 @@ pyramid.toWorld(transform_1)
 corner = Object(corner_model)
 corner.toWorld(transform_corner_start)
 
-corlist = []
-for i in range(10):
-    corlist += [Object(corner_model)]
-    corlist[i].toWorld(Matrix(4, 4, [
-    [2, 0, 0, 0],
-    [0, 0, -2, 0],
-    [0, -2, 0, 0],
-    [20, 25, -70+100*i, 1]
-]))
+# corlist = []
+# for i in range(10):
+#     corlist += [Object(corner_model)]
+#     corlist[i].toWorld(Matrix(4, 4, [
+#     [2, 0, 0, 0],
+#     [0, 0, -2, 0],
+#     [0, -2, 0, 0],
+#     [20, 25, -70+100*i, 1]
+# ]))
 
 player = Player()
-Labirinth = World(player, corner, *corlist)
+player.matrix = Matrix(4, 4, [[1,0,0,0],
+				[0,1,0,0],
+				[0,0,1,0],
+				[12,9,-415,1]])
+Labirinth = World(player, corner)
 Labirinth.canv_draw = lambda prim: \
     canv.create_polygon(*toCanv(prim), outline=prim.outline, width=prim.width, fill=prim.color)
 Labirinth.projection_matrix = proj_matrix
@@ -362,7 +365,7 @@ Labirinth.set_screen_resolution(SCREEN_WIDTH, SCREEN_HEIGHT)
 Labirinth.BSP_create()
 Labirinth.update()
 Labirinth.draw()
-
+print(Labirinth.prims_static)
 
 fps = 0
 fps_time_start = 0
@@ -375,7 +378,7 @@ def loop():
     start_time = time()
 
     allowed_directions = Labirinth.get_allowed_directions()     # get some restrictions to moving
-
+    #print(allowed_directions)
     motion_x, motion_y = 0, 0
     if root == root.focus_get():
         x, y = root.winfo_pointerx()-root.winfo_rootx(), root.winfo_pointery()-root.winfo_rooty()
@@ -383,6 +386,7 @@ def loop():
         motion_x, motion_y = x-previous_mouse_position[0], y-previous_mouse_position[1]
         previous_mouse_position = SCREEN_WIDTH/2, SCREEN_HEIGHT/2
         canv.event_generate('<Motion>', warp=True, x=SCREEN_WIDTH/2, y=SCREEN_HEIGHT/2)
+
     if w:
         if len(allowed_directions) == 0:
             player.move_along_z(player.speed, deviation_angle)  # if there are no restrictions
@@ -531,7 +535,6 @@ def loop():
         root.after(0, loop)
     else:
         root.after(34-dt, loop)
-
 
 
 loop()

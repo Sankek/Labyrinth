@@ -270,11 +270,13 @@ class World:
             self.canv_draw(prim)
 
     def get_allowed_directions(self):
+        i = 0
         allowed_directions = []
         #print(self.prims_static[1])
         i = 0
         x0, y0, z0 = self.player.matrix[3][0], self.player.matrix[3][1], self.player.matrix[3][2]
         for prim in self.prims_static:
+            i += 1
             x1, y1, z1 = prim.w_crds[0][0], prim.w_crds[0][1], prim.w_crds[0][2]    # for each plane get tree points
             x2, y2, z2 = prim.w_crds[1][0], prim.w_crds[1][1], prim.w_crds[1][2]
             x3, y3, z3 = prim.w_crds[2][0], prim.w_crds[2][1], prim.w_crds[2][2]
@@ -284,7 +286,7 @@ class World:
             C = (x2-x1)*(y3-y1)-(x3-x1)*(y2-y1)
             D = -A*x1-B*y1-C*z1
             
-            len_norm = abs((A**2 + B**2 + C**2))**0.5                                # length of normal
+            len_norm = abs((A**2 + B**2 + C**2))**0.5                               # length of normal
             dist = abs((A*x0 + B*y0 + C*z0 + D))/(len_norm)                         # distance to the plane
             
 
@@ -293,7 +295,7 @@ class World:
             else:
                 k = -1
             intersection = False
-
+            #print(dist, intersection)
             x_col, y_col, z_col = x0 + A * (dist/len_norm)*(-k), y0 + B * (dist/len_norm)*(-k), z0 + C * (dist/len_norm)*(-k)   # coordinates of the projection point
             
             if (x_col >= min([prim.w_crds[0][0], prim.w_crds[1][0], prim.w_crds[2][0], prim.w_crds[3][0]]) and x_col <= max([prim.w_crds[0][0], prim.w_crds[1][0], prim.w_crds[2][0], prim.w_crds[3][0]])) and (y_col >= min([prim.w_crds[0][1], prim.w_crds[1][1], prim.w_crds[2][1], prim.w_crds[3][1]]) and y_col <= max([prim.w_crds[0][1], prim.w_crds[1][1], prim.w_crds[2][1], prim.w_crds[3][1]])) and (z_col >= min([prim.w_crds[0][2], prim.w_crds[1][2], prim.w_crds[2][2], prim.w_crds[3][2]]) and z_col <= max([prim.w_crds[0][2], prim.w_crds[1][2], prim.w_crds[2][2], prim.w_crds[3][2]])):
