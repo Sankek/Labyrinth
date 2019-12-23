@@ -35,7 +35,7 @@ class Prim:
 
     # Getting projected coordinates using projection matrix
     def toProjection(self, matrix):
-        self.p_crds = self._rear_clipping_algorithm(2)*matrix
+        self.p_crds = self._rear_clipping_algorithm(5)*matrix
 
     # NDC is normalized device coordinates
     def toNDC(self):
@@ -194,6 +194,7 @@ class Object:
 class Player:
     def __init__(self):
         self.matrix = matr_E(4)
+        self.speed = 1
 
     def move(self, matrix):
         r = self.matrix[3]
@@ -226,6 +227,10 @@ class World:
         self.projection_matrix = None
         self.camera_matrix = matr_E(4)
         self.prims_static = None
+
+    def set_screen_resolution(self, width, height):
+        self.screen_width = width
+        self.screen_height = height
 
     def BSP_create(self, root_prim=0):
         # making a list of prims to sort them for drawing
@@ -263,6 +268,43 @@ class World:
     def draw(self):
         for prim in self.prims_static:
             self.canv_draw(prim)
+
+    def get_allowed_directions(self):
+        allowed_directions = []
+        #print(self.prims_static[1])
+        i = 0
+        x0, y0, z0 = self.player.matrix[3][0], self.player.matrix[3][1], self.player.matrix[3][2]
+        for prim in self.prims_static:
+            x1, y1, z1 = prim.w_crds[0][0], prim.w_crds[0][1], prim.w_crds[0][2]    # for each plane get tree points
+            x2, y2, z2 = prim.w_crds[1][0], prim.w_crds[1][1], prim.w_crds[1][2]
+            x3, y3, z3 = prim.w_crds[2][0], prim.w_crds[2][1], prim.w_crds[2][2]
+
+            A = (y2-y1)*(z3-z1)-(y3-y1)*(z2-z1)                                     # find coefficients for the plane equation
+            B = (x3-x1)*(z2-z1)-(x2-x1)*(z3-z1)
+            C = (x2-x1)*(y3-y1)-(x3-x1)*(y2-y1)
+            D = -A*x1-B*y1-C*z1
+            
+            len_norm = abs((A**2 + B**2 + C**2))**0.                                # length of normal
+            dist = abs((A*x0 + B*y0 + C*z0 + D))/(len_norm)                         # distance to the plane
+            
+
+            if A*x0 + B*y0 + C*z0 + D > 0:
+                k = 1
+            else:
+                k = -1
+            intersection = False
+
+            x_col, y_col, z_col = x0 + A * (dist/len_norm)*(-k), y0 + B * (dist/len_norm)*(-k), z0 + C * (dist/len_norm)*(-k)   # coordinates of the projection point
+            
+            if (x_col >= min([prim.w_crds[0][0], prim.w_crds[1][0], prim.w_crds[2][0], prim.w_crds[3][0]]) and x_col <= max([prim.w_crds[0][0], prim.w_crds[1][0], prim.w_crds[2][0], prim.w_crds[3][0]])) and (y_col >= min([prim.w_crds[0][1], prim.w_crds[1][1], prim.w_crds[2][1], prim.w_crds[3][1]]) and y_col <= max([prim.w_crds[0][1], prim.w_crds[1][1], prim.w_crds[2][1], prim.w_crds[3][1]])) and (z_col >= min([prim.w_crds[0][2], prim.w_crds[1][2], prim.w_crds[2][2], prim.w_crds[3][2]]) and z_col <= max([prim.w_crds[0][2], prim.w_crds[1][2], prim.w_crds[2][2], prim.w_crds[3][2]])):
+                intersection = True                                                 # interseption check
+            
+            if dist < 2*self.player.speed*4 and intersection == True:               # add restriction to moving
+                allowed_directions.append([A*k,B*k,C*k])
+            
+        return allowed_directions
+ 
+
 
 
 class Main:
@@ -488,6 +530,13 @@ class _Node:
                 self.behind.insert(clipped_prim_behind)
 
     def get_prims(self, view_crds):
+        '''
+        self.prims[i].w_crds[3][]
+        for prim in self.prims:
+            if (view_crds[0] - prim.w_crds[:,0])**2 + (view_crds[2] - prim.w_crds[:,2])**2) < R:
+                prims += prim
+
+        '''
         prims = []
         if self.infront is None and self.behind is None:
             prims += self.prims
@@ -509,6 +558,7 @@ class _Node:
                 prims += self.infront.get_prims(view_crds)
             if self.behind:
                 prims += self.behind.get_prims(view_crds)
+        
         return prims
 
 
