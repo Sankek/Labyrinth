@@ -8,7 +8,7 @@
 
 The game was tested on:
 
-    Microsoft Windows Version 10.0.18362.535
+    Microsoft Windows Version 10, Windows 8
     Python 3.7.4
     Tkinter 8.6
     
