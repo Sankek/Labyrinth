@@ -25,7 +25,7 @@ class _mci:
         (err, buf) = self.send(txt)
         if err != 0:
             print('Error %s for "%s": %s' % (str(err), txt, buf))
-        return (err, buf)
+        return err, buf
 
 # TODO: detect errors in all mci calls
 class AudioClip(object):
@@ -54,7 +54,7 @@ class AudioClip(object):
                 % (self._alias, start_ms, end_ms) )
 
     def isplaying(self):
-        return self._mode() == 'playing'
+        return self._mode() == b'playing'
 
     def _mode(self):
         err, buf = self._mci.directsend('status %s mode' % self._alias)

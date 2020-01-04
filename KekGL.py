@@ -195,6 +195,8 @@ class Player:
     def __init__(self):
         self.matrix = matr_E(4)
         self.speed = 1
+        self.isMoving = False
+        self.deviation_angle = 0.0
 
     def move(self, matrix):
         r = self.matrix[3]
