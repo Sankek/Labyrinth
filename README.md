@@ -25,3 +25,8 @@ The game was tested on:
 - **A**: left
 - **D**: right
 - **Mouse and arrows**: look around
+- **Q, E**: fly
+
+### Other
+- **ESC**: pause
+- **F**: here we go again 

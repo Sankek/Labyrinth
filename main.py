@@ -207,7 +207,7 @@ a, w, s, d, q, e, esc, step = False, False, False, False, False, False, False, F
 rot_up, rot_down, rot_left, rot_right = False, False, False, False
 deviation_angle = 0.0
 previous_mouse_position = root.winfo_pointerx()-root.winfo_rootx(), root.winfo_pointery()-root.winfo_rooty()
-filename_3 = 'steps.mp3'
+filename_3 = 'sounds/steps.mp3'
 clip_3 = mp3play.load(filename_3)
 
 def bindings():
@@ -341,7 +341,7 @@ def bindings():
 
     def press_F_to_pay_respect(event):
         global clip_2, filename_2
-        filename_2 = 'goagain.mp3'
+        filename_2 = 'sounds/goagain.mp3'
         clip_2 = mp3play.load(filename_2)
         clip_2.play()
 
@@ -419,7 +419,7 @@ def loop():
         root.config(cursor="")
         canv.destroy()
         game_is_on = False
-        img = PhotoImage(file='бентли.gif')
+        img = PhotoImage(file='images/bentley.gif')
         image_menu = Label(image=img)
         image_menu.place(x=0, y=0)
         image_menu.image = img

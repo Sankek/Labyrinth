@@ -1,7 +1,7 @@
 import mp3play
 from tkinter import*
 
-filename_1 = 'bentley.mp3'
+filename_1 = 'sounds/bentley.mp3'
 clip_1 = mp3play.load(filename_1)
 
 SCREEN_WIDTH = 1000
